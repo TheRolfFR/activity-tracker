@@ -50,16 +50,21 @@
     "security": {
       "csp": null
     },
+    "systemTray": {
+      "iconPath": "icons/icon.png",
+      "iconAsTemplate": true
+    },
     "updater": {
       "active": false
     },
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
-        "resizable": true,
+        "height": 330,
+        "resizable": false,
         "title": "activity-tracker",
-        "width": 800
+        "width": 500,
+        "transparent": true
       }
     ]
   }

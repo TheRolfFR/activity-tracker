@@ -1,8 +1,12 @@
 <script lang="ts">
-	import Counter from '$lib/Counter.svelte';
+    import Graph from '../lib/graph.svelte';
+
 	import { onMount } from 'svelte';
 
-    let payload: unknown = {};
+    import { TextBlock } from "fluent-svelte";
+    let value = "Default value";
+
+    let payload: any = {};
 
     onMount(async () => {
         const { listen } = await import("@tauri-apps/api/event")
@@ -18,53 +22,40 @@
 	<meta name="description" content="Svelte demo app" />
 </svelte:head>
 
-<section>
-	<h1>
-		<span class="welcome">
-			<picture>
-				<source srcset="svelte-welcome.webp" type="image/webp" />
-				<img src="svelte-welcome.png" alt="Welcome" />
-			</picture>
-		</span>
+<div class="twice">
+    <div>
+        <div class="caption"><TextBlock variant="caption">Clicks/min</TextBlock></div>
+        <TextBlock variant="title">{(payload.clicks_per_minute|| 0).toFixed(3)}</TextBlock>
+    </div>
+    <div>
+        <div class="caption"><TextBlock variant="caption">Inputs/min</TextBlock></div>
+        <TextBlock variant="title">{(payload.inputs_per_minute|| 0).toFixed(3)}</TextBlock>
+    </div>
+</div>
 
-		to your new<br />Activity Tracker app
-	</h1>
+<!-- <p>{JSON.stringify(payload, null, 2)}</p> -->
 
-	<h2>
-		try editing <strong>src/routes/+page.svelte</strong>
-	</h2>
-
-    <p><strong>{JSON.stringify(payload)}</strong></p>
-
-	<Counter />
-</section>
+<Graph title={"Click activity"} values={payload?.click_series?.points||[]} labels={payload?.click_series?.points||[]} />
+<Graph
+    title={"Input activity"}
+    values={payload?.input_series?.points||[]}
+    labels={payload?.input_series?.points||[]}
+    color={"#8B12AE"}
+/>
 
 <style>
-	section {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		flex: 1;
-	}
-
-	h1 {
-		width: 100%;
-	}
-
-	.welcome {
-		display: block;
-		position: relative;
-		width: 100%;
-		height: 0;
-		padding: 0 0 calc(100% * 495 / 2048) 0;
-	}
-
-	.welcome img {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		display: block;
-	}
+    p {
+        margin: 0;
+    }
+    .caption {
+        opacity: 0.7;
+    }
+    .twice {
+        display: flex;
+        flex: 1 1 auto;
+    }
+    .twice > * {
+        flex-grow: 1;
+        margin: 0 0 5px;
+    }
 </style>

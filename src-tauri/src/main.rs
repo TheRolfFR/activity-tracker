@@ -7,6 +7,7 @@ use std::vec;
 use std::thread;
 use std::sync::mpsc::channel;
 
+use tauri::{SystemTray, SystemTrayEvent};
 use tauri::Manager;
 
 pub mod data;
@@ -32,12 +33,30 @@ fn main() {
 
     activity_thread(evt_rchan, act_schan);
 
+    let system_tray = SystemTray::new();
+
     tauri::Builder::default()
+        .on_system_tray_event(|app, event| match event {
+            SystemTrayEvent::LeftClick {
+                ..
+            } => {
+                let main_window = app.get_window("main").unwrap();
+                if main_window.is_visible().unwrap() {
+                    main_window.hide().ok();
+                } else {
+                    main_window.show().ok();
+                }
+            }
+            _ => {}
+        })
+        .system_tray(system_tray)
         .invoke_handler(tauri::generate_handler![greet])
         .setup(move |app| {
 
             let main_window = app.get_window("main").unwrap();
+            main_window.set_skip_taskbar(true).unwrap();
             main_window.set_title("Activity tracker").unwrap();
+            main_window.set_decorations(false).unwrap();
             main_window.set_always_on_top(true).unwrap();
 
             thread::spawn(move || {
