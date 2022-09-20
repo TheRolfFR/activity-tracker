@@ -1,17 +1,34 @@
 <script lang="ts">
-    import Graph from '../lib/graph.svelte';
-
 	import { onMount } from 'svelte';
+    import Graph from '$lib/components/graph.svelte';
+	import type { Payload } from '$lib/data';
+	import Day from '$lib/islands/day.svelte';
+	import Week from '$lib/islands/week.svelte';
 
-    import { TextBlock } from "fluent-svelte";
-    let value = "Default value";
-
-    let payload: any = {};
+    let payload: Payload = {
+        clicks_per_minute: 0.0,
+        click_series: {
+            points: [],
+            labels: {
+                x: '',
+                y: '',
+            },
+        },
+        inputs_per_minute: 0.0,
+        input_series: {
+            points: [],
+            labels: {
+                x: '',
+                y: '',
+            },
+        },
+    };
 
     onMount(async () => {
         const { listen } = await import("@tauri-apps/api/event")
 
         listen('activity', (event) => {
+            // @ts-ignore
             payload = event.payload;
         })
     })
@@ -22,40 +39,32 @@
 	<meta name="description" content="Svelte demo app" />
 </svelte:head>
 
+<Day />
+<Week />
+
 <div class="twice">
     <div>
-        <div class="caption"><TextBlock variant="caption">Clicks/min</TextBlock></div>
-        <TextBlock variant="title">{(payload.clicks_per_minute|| 0).toFixed(3)}</TextBlock>
+        <Graph
+            title={"Click activity"}
+            data={payload.click_series} />
     </div>
     <div>
-        <div class="caption"><TextBlock variant="caption">Inputs/min</TextBlock></div>
-        <TextBlock variant="title">{(payload.inputs_per_minute|| 0).toFixed(3)}</TextBlock>
+        <Graph
+            title={"Input activity"}
+            data={payload.input_series}
+            color={"#8B12AE"}
+        />
     </div>
 </div>
 
-<!-- <p>{JSON.stringify(payload, null, 2)}</p> -->
-
-<Graph title={"Click activity"} values={payload?.click_series?.points||[]} labels={payload?.click_series?.points||[]} />
-<Graph
-    title={"Input activity"}
-    values={payload?.input_series?.points||[]}
-    labels={payload?.input_series?.points||[]}
-    color={"#8B12AE"}
-/>
-
 <style>
-    p {
-        margin: 0;
-    }
-    .caption {
-        opacity: 0.7;
-    }
     .twice {
         display: flex;
         flex: 1 1 auto;
+        margin: -5px;
     }
     .twice > * {
         flex-grow: 1;
-        margin: 0 0 5px;
+        margin: 5px;
     }
 </style>

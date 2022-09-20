@@ -9,6 +9,8 @@ use std::sync::mpsc::channel;
 
 use tauri::{SystemTray, SystemTrayEvent};
 use tauri::Manager;
+use tauri_plugin_window_state;
+
 
 pub mod data;
 
@@ -18,6 +20,8 @@ use event_thread::event_thread;
 mod activity_thread;
 use activity_thread::activity_thread;
 
+mod thread_activity_week;
+use thread_activity_week::thread_activity_week;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -26,16 +30,23 @@ fn greet(name: &str) -> String {
 }
 
 fn main() {
-    let (act_schan, act_rchan) = channel();
     let (evt_schan, evt_rchan) = channel();
+    let (act_schan, act_rchan) = channel();
+    let (day_schan, day_rchan) = channel();
 
     event_thread(evt_schan);
 
-    activity_thread(evt_rchan, act_schan);
+    thread::spawn(move || -> () {
+        activity_thread(evt_rchan, act_schan, day_schan);
+    });
+
+    thread::spawn(move || -> () {
+        thread_activity_week(day_rchan);
+    });
 
     let system_tray = SystemTray::new();
-
     tauri::Builder::default()
+        .plugin(tauri_plugin_window_state::Builder::default().build())
         .on_system_tray_event(|app, event| match event {
             SystemTrayEvent::LeftClick {
                 ..
@@ -54,11 +65,7 @@ fn main() {
         .setup(move |app| {
 
             let main_window = app.get_window("main").unwrap();
-            main_window.set_skip_taskbar(true).unwrap();
-            main_window.set_title("Activity tracker").unwrap();
-            main_window.set_decorations(false).unwrap();
-            main_window.set_always_on_top(true).unwrap();
-
+            
             thread::spawn(move || {
                 loop {
                     if let Ok(act) = act_rchan.recv() {

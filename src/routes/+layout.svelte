@@ -4,6 +4,7 @@
 
 	import type { WebviewWindow } from '@tauri-apps/api/window';
 	import { TextBlock } from 'fluent-svelte';
+    import Favicon from '$lib/assets/favicon.png';
 
 	export const prerender = true;
 	export const ssr = false;
@@ -18,16 +19,12 @@
 
 <div id="title-bar" data-tauri-drag-region>
 	<div id="title" data-tauri-drag-region>
-		<TextBlock data-tauri-drag-region variant="bodyStrong">Activity tracker</TextBlock>
+        <img height="14" src={Favicon} alt="A"/><span>
+            <TextBlock data-tauri-drag-region variant="bodyStrong">Activity tracker</TextBlock>
+        </span>
 	</div>
 	<div>
-		<div class="titlebar-button" id="titlebar-minimize" on:click={() => appWindow.minimize()}>
-			<img src="https://api.iconify.design/mdi:window-minimize.svg?color=white" alt="minimize" />
-		</div>
-		<div class="titlebar-button" id="titlebar-maximize" on:click={() => appWindow.toggleMaximize()}>
-			<img src="https://api.iconify.design/mdi:window-maximize.svg?color=white" alt="maximize" />
-		</div>
-		<div class="titlebar-button" id="titlebar-close" on:click={() => appWindow.close()}>
+		<div class="titlebar-button" id="titlebar-close" on:click={() => appWindow.hide()}>
 			<img src="https://api.iconify.design/mdi:close.svg?color=white" alt="close" />
 		</div>
 	</div>
@@ -36,12 +33,12 @@
 <main>
 	<slot />
 </main>
-<div id="bg"></div>
+<div class="bg" id="fg"></div>
+<div class="bg" id="bg"></div>
 
 <style>
 	/* Some base styles to get things looking right. */
 	:global(main) {
-		/* background-color: var(--fds-solid-background-base); */
         font-family: var(--fds-font-family-small);
 	}
 	:global(body) {
@@ -51,7 +48,6 @@
 	main {
 		padding: 0 8px 8px;
 		border-radius: 0.5em;
-		box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
 		position: fixed;
 		overflow: auto;
         top: 37px;
@@ -64,14 +60,24 @@
     /* https://fluent-svelte.vercel.app/bloom-mica-light.png */
     #bg {
         background: url("https://fluent-svelte.vercel.app/bloom-mica-dark.png") 50%/cover no-repeat fixed;
+        opacity: .7;
+        z-index: -3;
+    }
+
+    #fg {
+		background-color: var(--fds-solid-background-base);
+        opacity: .7;
+        z-index: -2;
+		box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+    }
+
+    .bg {
         border-radius: 0.5em;
         position: fixed;
         top: 5px;
         left: 5px;
         right: 5px;
         bottom: 5px;
-        opacity: .5;
-        z-index: -1;
     }
 
 	#title-bar {
@@ -86,7 +92,7 @@
 		align-items: center;
 		justify-content: flex-end;
 		position: fixed;
-		top: 5px;
+		top: 4px;
 		left: 5px;
 		right: 5px;
 		z-index: 10;
@@ -94,8 +100,17 @@
 
 	#title {
 		flex-grow: 1;
-		padding-left: 10px;
+		padding-left: 8px;
 	}
+
+    #title img {
+        margin-right: 8px;
+    }
+
+    #title > * {
+        display: inline-block;
+        vertical-align: middle;
+    }
 
 	.titlebar-button {
 		display: inline-flex;
@@ -103,8 +118,15 @@
 		align-items: center;
 		width: 30px;
 		height: 30px;
+        text-align: center;
 	}
 	.titlebar-button:hover {
-		background: #5bbec3;
+		background: rgba(255,255,255,0.15);
 	}
+    .titlebar-button:last-child {
+        border-top-right-radius: 0.5em;
+    }
+    .titlebar-button:last-child:hover {
+        background: #D41325;
+    }
 </style>

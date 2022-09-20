@@ -51,7 +51,7 @@
       "csp": null
     },
     "systemTray": {
-      "iconPath": "icons/icon.png",
+      "iconPath": "../src/lib/assets/icon.png",
       "iconAsTemplate": true
     },
     "updater": {
@@ -60,11 +60,15 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 330,
+        "height": 385,
         "resizable": false,
-        "title": "activity-tracker",
+        "title": "Work tracker",
         "width": 500,
-        "transparent": true
+        "decorations": false,
+        "skipTaskbar": true,
+        "alwaysOnTop": true,
+        "transparent": true,
+        "visible": false
       }
     ]
   }
