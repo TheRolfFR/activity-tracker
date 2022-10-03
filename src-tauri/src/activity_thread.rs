@@ -3,7 +3,7 @@ use bounded_vec_deque::BoundedVecDeque;
 use rdev::{EventType::*, Event};
 use std::time::Instant;
 
-use crate::data::*;
+use crate::{data::*, day_activity::DayActivity};
 
 pub fn activity_thread(evt_rchan: Receiver<Event>, act_schan: Sender<Activity>, day_schan: Sender<Activity>) {
     // event recorder
@@ -16,11 +16,13 @@ pub fn activity_thread(evt_rchan: Receiver<Event>, act_schan: Sender<Activity>, 
         x: String::from("Inputs"),
         y: String::from("sec")
     };
+
+    let (click, input) = DayActivity::load_activity_today().get_last_activity();
     
-    let mut clicks_by_minutes: BoundedVecDeque::<Measure::<usize>> = BoundedVecDeque::from_iter([Measure::new()], 5);
+    let mut clicks_by_minutes: BoundedVecDeque::<Measure::<usize>> = BoundedVecDeque::from_iter(click, MINUTES_PER_DAY);
     let mut last_click = Instant::now();
 
-    let mut inputs_per_min: BoundedVecDeque::<Measure::<usize>> = BoundedVecDeque::from_iter([Measure::new()], 300);
+    let mut inputs_per_min: BoundedVecDeque::<Measure::<usize>> = BoundedVecDeque::from_iter(input, MINUTES_PER_DAY);
     let mut last_pres = last_click.clone();
 
     let mut last_emit = last_click.clone();

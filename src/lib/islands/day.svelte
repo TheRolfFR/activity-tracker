@@ -1,6 +1,6 @@
 <script>
-	import Graph from "$lib/components/graph.svelte";
-	import Stat from "$lib/components/stat.svelte";
+	import Graph from "$components/graph.svelte";
+	import Stat from "$components/stat.svelte";
 </script>
 
 <div id="day">
@@ -12,7 +12,10 @@
                 y: "",
             },
         }} />
-    </div><Stat title='Stats' value={[9,5]} />
+    </div><div>
+        <Stat title='Stats' value={[9,5]} />
+        <Stat title='Adjusted' value={[1,5]} />
+    </div>
 </div>
 
 <style scoped>
@@ -23,6 +26,6 @@
     }
     #day > div:first-child {
         flex-grow: 1;
-        margin-right: 20px;
+        margin-right: var(--spacing);
     }
 </style>

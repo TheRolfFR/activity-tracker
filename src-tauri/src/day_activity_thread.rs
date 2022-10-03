@@ -1,6 +1,7 @@
 use std::sync::mpsc::Receiver;
 
-use crate::data::{Activity, FIVE_MINUTES, DayActivity};
+use crate::data::{Activity, FIVE_MINUTES};
+use crate::day_activity::DayActivity;
 
 pub fn thread_activity_week(evt_rchan: Receiver<Activity>) {
     loop {

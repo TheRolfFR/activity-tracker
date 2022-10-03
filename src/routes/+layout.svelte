@@ -39,6 +39,7 @@
 <style>
 	/* Some base styles to get things looking right. */
 	:global(main) {
+        --spacing: 8px;
         font-family: var(--fds-font-family-small);
 	}
 	:global(body) {
@@ -46,7 +47,7 @@
 	}
 
 	main {
-		padding: 0 8px 8px;
+		padding: 0 var(--spacing) var(--spacing);
 		border-radius: 0.5em;
 		position: fixed;
 		overflow: auto;

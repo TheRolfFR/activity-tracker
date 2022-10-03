@@ -33,3 +33,6 @@ node_modules
 
 # Ignore code-workspaces
 *.code-workspace
+
+# rust TS bindings
+src-tauri/bindings

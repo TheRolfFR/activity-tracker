@@ -4,12 +4,15 @@
 	import { LinkedChart, LinkedLabel, LinkedValue } from 'svelte-tiny-linked-charts';
     // @ts-ignore
     import { v4 as uuidv4 } from "uuid";
-	import Caption from '$lib/components/caption.svelte';
-	import type { DataSeries } from '$lib/data';
+	import Caption from '$components/caption.svelte';
+	import type { ActivitySeries } from '$bindings/ActivitySeries';
+	import type { Measure } from '$bindings/Measure';
+	import Title from './title.svelte';
 
     export let title: string;
-    export let data: DataSeries<number>;
+    export let data: ActivitySeries<Measure<number>>;
     export let color: string = '#117DBB';
+    export let avg: number | undefined = undefined; 
 
     const uid = uuidv4();
 
@@ -25,8 +28,10 @@
          + ':' + padTo2Digits(now.getMinutes());
     };
     
-    $: labels = data.points.map(e => getHour(e.date));
+    $: labels = data.points.map(e => getHour(Number.parseInt(e.date, 10)));
     $: values = data.points.map(e => e.count);
+
+    $: hasData = data.points.length > 0;
 
     $: lastPoint = data.points.length ? {
         count: values[values.length - 1],
@@ -40,7 +45,11 @@
 </script>
 
 <div id="title">
-    <TextBlock variant="bodyLarge">{title}</TextBlock>
+    <Title>{title}</Title>
+    {#if avg }
+        <div class="spacer"></div>
+        <TextBlock variant="bodyStrong">{avg.toFixed(2)}/min</TextBlock>
+    {/if}
 </div>
 <div id="graph-container">
     <div id="graph-part">
@@ -56,11 +65,15 @@
         />
     </div>
     <div id="label-part">
-        <Caption>
-            {#if hovered}
-                Selected: <LinkedLabel linked={uid} />: <LinkedValue uid={uid} />
-            {/if}
-        </Caption>
+            <Caption>
+                {#if hasData}
+                    {#if hovered}
+                        Selected: <LinkedLabel linked={uid} />: <LinkedValue uid={uid} />
+                    {:else}
+                        Last minute: {lastPoint.date}: {lastPoint.count}
+                    {/if}
+                {/if}
+            </Caption>
     </div>
 </div>
 
@@ -68,6 +81,12 @@
     #title {
         margin: 8px 0;
         opacity: 0.7;
+        display: flex;
+        align-items: center;
+    }
+
+    .spacer {
+        flex-grow: 1;
     }
     
     #graph-part {

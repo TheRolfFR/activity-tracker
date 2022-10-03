@@ -1,7 +1,7 @@
 {
   "build": {
     "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build",
+    "beforeBuildCommand": "npm run bindings && npm run build",
     "devPath": "http://localhost:5173",
     "distDir": "../build/",
     "withGlobalTauri": true

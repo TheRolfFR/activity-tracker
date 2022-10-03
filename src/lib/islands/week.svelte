@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Stat from "$lib/components/stat.svelte";
+	import Stat from "$components/stat.svelte";
 </script>
 
 <div class="flex">

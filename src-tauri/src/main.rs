@@ -7,6 +7,7 @@ use std::vec;
 use std::thread;
 use std::sync::mpsc::channel;
 
+use payload::Payload;
 use tauri::{SystemTray, SystemTrayEvent};
 use tauri::Manager;
 use tauri_plugin_window_state;
@@ -20,8 +21,12 @@ use event_thread::event_thread;
 mod activity_thread;
 use activity_thread::activity_thread;
 
-mod thread_activity_week;
-use thread_activity_week::thread_activity_week;
+mod day_activity_thread;
+use day_activity_thread::thread_activity_week;
+
+mod payload;
+
+mod day_activity;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -69,7 +74,8 @@ fn main() {
             thread::spawn(move || {
                 loop {
                     if let Ok(act) = act_rchan.recv() {
-                        main_window.emit("activity", act).ok();
+
+                        main_window.emit("activity", Payload::new(act)).ok();
                     }
                 }
             });
