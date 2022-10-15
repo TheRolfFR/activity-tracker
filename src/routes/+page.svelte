@@ -1,7 +1,11 @@
 <script lang="ts">
+    import type { Event } from "@tauri-apps/api/event";
+    import type { Payload } from '$bindings/Payload';
+    import type { ActivitySeries } from "$bindings/ActivitySeries";
+    import type { Measure } from "$bindings/Measure";
+
 	import { onMount } from 'svelte';
     import Graph from '$components/graph.svelte';
-	import type { Payload } from '$bindings/Payload';
 	import Day from '$lib/islands/day.svelte';
 	import Week from '$lib/islands/week.svelte';
 
@@ -33,13 +37,42 @@
 
     $: activity = payload.activity;
 
+    let day_activity: ActivitySeries<Measure<number>> = {
+        labels: {
+            x: "act",
+            y: "amount"
+        },
+        points: []
+    };
+
+    $: {
+        let series_obj: Record<string, Measure<number>> = {};
+        const acts = [activity.click_series, activity.input_series];
+
+        acts.forEach(act => {
+            act.points.forEach(measure => {
+                if(! (measure.date in series_obj) ) {
+                    series_obj[measure.date] = {
+                        count: 0,
+                        date: measure.date
+                    };
+                }
+
+                series_obj[measure.date].count+=measure.count;
+            });
+        });
+        
+        // sort by increasing date
+        day_activity.points = Object.values(series_obj).sort((a, b) => a.date - b.date);
+    }
+
     onMount(async () => {
         const { listen } = await import("@tauri-apps/api/event")
 
-        listen('activity', (event) => {
-            // @ts-ignore
+        listen('activity', (event: Event<Payload>) => {
             payload = event.payload;
-            console.log(payload)
+            // @ts-ignore
+            window.payload = payload;
         })
     })
 </script>
@@ -49,8 +82,8 @@
 	<meta name="description" content="Svelte demo app" />
 </svelte:head>
 
-<Day />
-<Week />
+<Day data={day_activity}/>
+<Week data={payload.week_stats} />
 
 <div class="twice">
     <div>

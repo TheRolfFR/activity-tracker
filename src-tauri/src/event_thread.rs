@@ -11,7 +11,7 @@ pub fn event_thread(evt_schan: Sender<Event>) {
                 _ => {
                     evt_schan
                     .send(event)
-                    .unwrap_or_else(|e| println!("Could not send event {:?}", e));
+                    .ok();
                 }
             }
         }).expect("Could not listen");

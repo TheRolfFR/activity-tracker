@@ -70,7 +70,7 @@
                     {#if hovered}
                         Selected: <LinkedLabel linked={uid} />: <LinkedValue uid={uid} />
                     {:else}
-                        Last minute: {lastPoint.date}: {lastPoint.count}
+                        Last minute: {lastPoint.count}
                     {/if}
                 {/if}
             </Caption>

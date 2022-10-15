@@ -111,9 +111,9 @@ pub type WeekActivity = BoundedVecDeque::<DayActivity>;
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, TS)]
 #[ts(export)]
 pub struct WeekStats {
-    pub total: u64,
-    pub done: u64,
-    pub left: u64
+    pub total: u32,
+    pub done: u32,
+    pub left: u32
 }
 
 impl WeekStats {
@@ -130,14 +130,30 @@ impl WeekStats {
     pub fn now() -> WeekStats {
         let week_activity = Self::week_activity();
         
-        let total_secs = WEEK_DURATION.as_secs();
+        let total_min = (WEEK_DURATION.as_secs()/60) as u32;
         week_activity.iter().fold(WeekStats {
-            total: total_secs,
+            total: total_min,
             done: 0,
-            left: total_secs
-        }, move |mut acc,cur| {
+            left: total_min
+        }, |mut acc,cur| {
             let day_sum = cur.activities.iter().fold(Duration::ZERO, |mut sum, act| {
-                if let Some(end) = act.end {
+                let act_end = act.end.or_else(|| {
+                    // activity not ended
+
+                    let last_click = act.level.click_series.points.last()
+                    .map(|v| v.date);
+                    let last_input = act.level.input_series.points.last()
+                    .map(|v| v.date);
+
+                    match (last_click, last_input) {
+                        (None, None) => None,
+                        (None, Some(i)) => Some(i),
+                        (Some(c), None) => Some(c),
+                        (Some(c), Some(i)) => Some(i.max(c)),
+                    }
+                });
+
+                if let Some(end) = act_end {
                     sum += Duration::from_secs(
                         (end - act.start).num_seconds().try_into().unwrap_or_default()
                     );
@@ -146,9 +162,9 @@ impl WeekStats {
                 return sum;
             });
 
-            let day_sum_secs = day_sum.as_secs();
-            acc.done += day_sum_secs;
-            acc.left -= day_sum_secs;
+            let day_sum_min = (day_sum.as_secs()/60) as u32;
+            acc.done += day_sum_min;
+            acc.left -= day_sum_min;
 
             return acc
         })

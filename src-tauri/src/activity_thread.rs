@@ -45,7 +45,12 @@ pub fn activity_thread(evt_rchan: Receiver<Event>, act_schan: Sender<Activity>, 
                     last_pres = now;
                 }
 
-                let last = inputs_per_min.back_mut().unwrap(); // one element at least
+                if inputs_per_min.is_empty() {
+                    inputs_per_min.push_back(Measure::new());
+                }
+                // impossible to make back_mut or_then due to double mutable borrow
+                let last = inputs_per_min.back_mut().unwrap();
+                
                 (*last).count += 1;
             }
 
@@ -58,6 +63,10 @@ pub fn activity_thread(evt_rchan: Receiver<Event>, act_schan: Sender<Activity>, 
                         diff -= ONE_MINUTE;
                     }
                     last_click = now;
+                }
+
+                if clicks_by_minutes.is_empty() {
+                    clicks_by_minutes.push_back(Measure::new());
                 }
 
                 let last = clicks_by_minutes.back_mut().unwrap(); // one element at least

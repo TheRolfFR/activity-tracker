@@ -23,6 +23,7 @@ pub struct ActivitySeries<T: serde::Serialize + TS> {
 pub struct Measure<T: serde::Serialize + Default + TS> {
     pub count: T,
     #[serde(with = "ts_seconds")]
+    #[ts(type = "number")]
     pub date: DateTime<Utc>
 }
 
@@ -59,4 +60,4 @@ pub struct ActivityPeriod {
 
 pub const DAYS: usize = 5;
 pub const MINUTES_PER_DAY: usize = 1440;
-pub const WEEK_DURATION: Duration = Duration::from_secs(126000); // 35H
+pub const WEEK_DURATION: Duration = Duration::from_secs(135000); // 37H30
