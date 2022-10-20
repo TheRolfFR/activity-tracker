@@ -18,6 +18,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_with 2.0.1",
+ "sorted-vec",
  "tauri",
  "tauri-build",
  "tauri-plugin-window-state",
@@ -2686,6 +2687,12 @@ name = "smallvec"
 version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2fd0db749597d91ff862fd1d55ea87f7855a744a8425a64695b6fca237d1dad1"
+
+[[package]]
+name = "sorted-vec"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "da8edb37c24177a4d09d502f3755ef679986654742af1a50a6e4f9b68108d366"
 
 [[package]]
 name = "soup2"

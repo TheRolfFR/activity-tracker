@@ -13,6 +13,8 @@
     export let data: ActivitySeries<Measure<number>>;
     export let color: string = '#117DBB';
     export let avg: number | undefined = undefined; 
+    export let width: number = 212; // default 150
+    export let type: string = "bar";
 
     const uid = uuidv4();
 
@@ -25,13 +27,13 @@
         let now = new Date(s*1000);
         
         return padTo2Digits(now.getHours())
-         + ':' + padTo2Digits(now.getMinutes());
+         + 'h' + padTo2Digits(now.getMinutes());
     };
-    
-    $: labels = data.points.map(e => getHour(Number.parseInt(e.date, 10)));
-    $: values = data.points.map(e => e.count);
+
 
     $: hasData = data.points.length > 0;
+    $: labels = data.points.map(e => getHour(e.date));
+    $: values = data.points.map(e => e.count);
 
     $: lastPoint = data.points.length ? {
         count: values[values.length - 1],
@@ -59,6 +61,8 @@
             on:blur={ () => hovered = false } 
             {labels}
             {values}
+            {type}
+            {width}
             fill={color}
             linked={uid}
             uid={uid}
@@ -70,7 +74,7 @@
                     {#if hovered}
                         Selected: <LinkedLabel linked={uid} />: <LinkedValue uid={uid} />
                     {:else}
-                        Last minute: {lastPoint.count}
+                        Last minute: {lastPoint.count} ({data.points.length})
                     {/if}
                 {/if}
             </Caption>

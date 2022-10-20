@@ -9,24 +9,22 @@ use std::sync::mpsc::channel;
 
 use payload::Payload;
 use tauri::{SystemTray, SystemTrayEvent};
+use rdev::Event;
 use tauri::Manager;
 use tauri_plugin_window_state;
 
 
-pub mod data;
+mod threads;
+use threads::*;
 
-mod event_thread;
-use event_thread::event_thread;
+mod day_record;
+mod day_record_file;
 
-mod activity_thread;
-use activity_thread::activity_thread;
-
-mod day_activity_thread;
-use day_activity_thread::thread_activity_week;
+mod data;
 
 mod payload;
 
-mod day_activity;
+mod week_stats;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -35,18 +33,13 @@ fn greet(name: &str) -> String {
 }
 
 fn main() {
-    let (evt_schan, evt_rchan) = channel();
-    let (act_schan, act_rchan) = channel();
-    let (day_schan, day_rchan) = channel();
+    let (evt_schan, evt_rchan) = channel::<Event>();
+    let (payload_schan, payload_rchan) = channel::<()>();
 
     event_thread(evt_schan);
 
     thread::spawn(move || -> () {
-        activity_thread(evt_rchan, act_schan, day_schan);
-    });
-
-    thread::spawn(move || -> () {
-        thread_activity_week(day_rchan);
+        day_thread(evt_rchan, payload_schan);
     });
 
     let system_tray = SystemTray::new();
@@ -73,9 +66,14 @@ fn main() {
             
             thread::spawn(move || {
                 loop {
-                    if let Ok(act) = act_rchan.recv() {
-
-                        main_window.emit("activity", Payload::new(act)).ok();
+                    match payload_rchan.recv() {
+                        Ok(_) => {
+                            let payload = Payload::new();
+                            main_window.emit("activity", payload).ok();
+                        },
+                        Err(_) => {
+                            // nope do nothing
+                        },
                     }
                 }
             });

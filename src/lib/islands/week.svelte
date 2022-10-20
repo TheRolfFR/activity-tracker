@@ -4,19 +4,23 @@
 
     export let data: WeekStats;
 
-    $: week_hours = Object.entries(data)
-    .map(
-        ([key,secs]: [string,number]): [string, [number, number]] => {
-            return [key, [Math.floor(secs/60), secs%60]]
-        })
-    .reduce((acc: Record<string, [number, number]>, cur) => {
-        acc[cur[0]] = cur[1];
-        return acc
-    }, {})
+    let done:  [number, number] = [0,0];
+    let left:  [number, number] = [0,0];
+    let total: [number, number] = [0,0];
+
+    $: {
+        total = [Math.floor(data.total/60), Math.round(data.total%60)]
+
+        let done_min = data.done/60;
+        done = [Math.floor(done_min/60), Math.round(done_min%60)]
+
+        let secs = data.total - done_min;
+        left = [Math.floor(secs/60), Math.round(secs%60)];
+    }
 </script>
 
 <div class="flex">
-    <Stat title='Week activity' value={week_hours['done']}></Stat>
-    <Stat title='Time left' value={week_hours['left']}></Stat>
-    <Stat title='Total' value={week_hours['total']}></Stat>
+    <Stat title='Week activity' value={done}></Stat>
+    <Stat title='Time left' value={left}></Stat>
+    <Stat title='Total' value={total}></Stat>
 </div>
