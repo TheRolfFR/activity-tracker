@@ -32,7 +32,8 @@
         week_stats: {
             total: 0,
             done: 0
-        }
+        },
+        today: 0
     };
     
     let activity: Activity;
