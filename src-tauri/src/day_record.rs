@@ -47,15 +47,8 @@ impl DayRecord {
         let date = Utc::now();
         let minutes = date.timestamp()/60;
 
-        let opt_last = vec.last_mut()
-        .and_then(|o| {
-            let entry_date = &o.date.timestamp()/60;
-
-            if entry_date == minutes {
-                Some(o)
-            } else {
-                None
-            }
+        let opt_last = vec.iter_mut().rev().find(|e| {
+            minutes == e.date.timestamp()/60
         });
 
         if let Some(last) = opt_last {

@@ -24,6 +24,8 @@ tauri-plugin-window-state = "0.1.0"
 ts-rs = { version = "6.2.0", features = ["chrono-impl"] }
 serde_with = "2.0.1"
 sorted-vec = "0.8.0"
+log = "0.4.17"
+simple-logging = "2.0.2"
 
 [features]
 # by default Tauri runs in production mode

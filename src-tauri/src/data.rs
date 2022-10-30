@@ -55,6 +55,3 @@ pub struct ActivityPeriod {
     pub end: Option<DateTime<Utc>>,
     pub level: Activity
 }
-
-pub const DAYS: usize = 5;
-pub const WEEK_DURATION: Duration = Duration::from_secs(135000); // 37H30
