@@ -8,6 +8,7 @@
 	import type { ActivitySeries } from '$bindings/ActivitySeries';
 	import type { Measure } from '$bindings/Measure';
 	import Title from './title.svelte';
+	import { getHour } from '$lib/helpers/date';
 
     export let title: string;
     export let data: ActivitySeries<Measure<number>>;
@@ -17,19 +18,6 @@
     export let type: string = "bar";
 
     const uid = uuidv4();
-
-
-    function padTo2Digits(num: number) {
-        return String(num).padStart(2, '0');
-    }
-
-    const getHour = (s: number) => {
-        let now = new Date(s*1000);
-        
-        return padTo2Digits(now.getHours())
-         + 'h' + padTo2Digits(now.getMinutes());
-    };
-
 
     $: hasData = data.points.length > 0;
     $: labels = data.points.map(e => getHour(e.date));

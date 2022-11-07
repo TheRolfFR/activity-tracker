@@ -17,7 +17,7 @@ impl<'a> From<Values<'a, u32, DayRecord>> for WeekStats {
             done: 0
         }, |mut acc,cur| {
             let stats = cur.get_stats(act_dur);
-            let secs = stats.duration.num_seconds();
+            let secs = stats.duration.as_secs();
             acc.done += secs as u32;
             acc
         });

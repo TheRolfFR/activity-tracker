@@ -1,3 +1,4 @@
+import type { DayStats } from '$bindings/DayStats';
 import type { WeekStats } from '$bindings/WeekStats';
 import type { ActivitySeries } from "$bindings/ActivitySeries";
 import type { Measure } from "$bindings/Measure";
@@ -10,10 +11,17 @@ export interface Activity {
     adjusted: number
 }
 
+export interface ActDur {
+    count: number,
+    from: number,
+    to: number
+}
+
 export interface Payload {
     activity: Activity,
     today: number,
-    week_stats: WeekStats
+    week_stats: WeekStats,
+    today_stats: DayStats
 }
 
 export type WeekActivity = Array<Activity>;

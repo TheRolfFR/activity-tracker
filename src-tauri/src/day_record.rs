@@ -1,8 +1,9 @@
-use std::{vec, collections::HashMap, ops::AddAssign};
+use std::{vec, collections::HashMap, ops::{AddAssign, Add}, time::Duration};
 use crate::data::{ClickMeasure, InputMeasure, AdjustedType, MeasureDate, Measure, Activity, ActivitySeries, MeasureCount, ActivityLabels};
 
-use chrono::{serde::ts_seconds, Duration, Utc};
-use serde::{Deserialize, Serialize};
+use chrono::{serde::ts_seconds, Utc};
+use serde::{self, Deserialize, Serialize};
+use serde_with::serde_as;
 use sorted_vec::SortedSet;
 use ts_rs::TS;
 
@@ -18,18 +19,25 @@ pub struct DayRecord {
     pub adjusted: AdjustedType
 }
 
-#[derive(Debug, Clone, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct DayActivityStat {
+    #[serde(with = "ts_seconds")]
+    #[ts(type = "number")]
     pub from: MeasureDate,
+    #[serde(with = "ts_seconds")]
+    #[ts(type = "number")]
     pub to: MeasureDate,
     pub count: MeasureCount
 }
 
-#[derive(Debug, Clone, TS)]
+#[derive(Serialize, Deserialize, Debug, Clone, TS)]
+#[serde_as]
 #[ts(export)]
 pub struct DayStats {
     pub activities: Vec<DayActivityStat>,
+    #[serde_as(as = "serde_with::DurationSeconds<i64>")]
+    #[ts(type = "number")]
     pub duration: Duration
 }
 
@@ -72,10 +80,10 @@ impl DayRecord {
     }
 
     /// Computes stats from clicks and inputs
-    pub fn get_stats(&self, act_duration: Duration) -> DayStats {
+    pub fn get_stats(&self, act_duration: chrono::Duration) -> DayStats {
         let mut res = DayStats {
             activities: vec![],
-            duration: Duration::zero()
+            duration: Duration::ZERO
         };
 
         // get all timestamps
@@ -104,27 +112,33 @@ impl DayRecord {
             }
         }
 
-        let mut opt_act: Option<DayActivityStat> = None;
+        let mut opt_last_activity: Option<DayActivityStat> = None;
         for cur_date in dates.iter() {
             let opt_count = measures.get(&cur_date);
 
-            match (opt_count, opt_act.as_mut()) {
+            match (opt_count, opt_last_activity.as_mut()) {
                 (None, _) => {},
-                (Some(cur_count), Some(act)) => {
-                    if cur_date.signed_duration_since(act.to) <= act_duration {
-                        act.to = *cur_date;
-                        act.count += cur_count;
+                (Some(cur_count), Some(last_activity)) => {
+                    let computed_duration = cur_date.signed_duration_since(last_activity.to);
+                    if computed_duration <= act_duration {
+                        last_activity.to = *cur_date;
+                        last_activity.count += cur_count;
                     } else {
-                        act.to = *cur_date;
-                        res.activities.push(act.clone());
-                        let dur = act.to.signed_duration_since(act.from);
-                        res.duration = res.duration + dur;
+                        // close last activity
+                        res.activities.push(last_activity.clone());
+                        let dur: u64 = last_activity.to.signed_duration_since(last_activity.from).num_minutes().try_into().unwrap();
+                        res.duration = res.duration.add(Duration::from_secs(dur*60));
 
-                        opt_act = None;
+                        // start new Activity
+                        opt_last_activity = Some(DayActivityStat {
+                            from: *cur_date,
+                            to: *cur_date,
+                            count: *cur_count
+                        });
                     }
                 },
                 (Some(cur_count), None) =>{
-                    opt_act = Some(DayActivityStat {
+                    opt_last_activity = Some(DayActivityStat {
                         from: *cur_date,
                         to: *cur_date,
                         count: *cur_count
@@ -133,8 +147,10 @@ impl DayRecord {
             }
         }
 
-        if let Some(act) = opt_act {
-            res.duration = res.duration + act.to.signed_duration_since(act.from).min(act_duration);
+        if let Some(act) = opt_last_activity {
+            let dur = act.to.signed_duration_since(act.from).min(act_duration);
+            let dur_secs: u64 = dur.num_seconds().try_into().unwrap();
+            res.duration = res.duration + Duration::from_secs(dur_secs*60);
         }
 
         res

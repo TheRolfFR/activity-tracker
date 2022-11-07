@@ -3,11 +3,11 @@
     import type { ActivitySeries } from "$bindings/ActivitySeries";
     import type { Measure } from "$bindings/Measure";
 
-	import { onMount } from 'svelte';
+    import { onMount } from 'svelte';
     import Graph from '$components/graph.svelte';
-	import Day from '$lib/islands/day.svelte';
-	import Week from '$lib/islands/week.svelte';
-	import type { Activity, Payload } from "$lib/data";
+    import Day from '$lib/islands/day.svelte';
+    import Week from '$lib/islands/week.svelte';
+    import type { Activity, Payload } from "$lib/data";
 
     let payload: Payload = {
         activity: {
@@ -30,10 +30,13 @@
             adjusted: 0
         },
         week_stats: {
-            total: 0,
             done: 0
         },
-        today: 0
+        today: 0,
+        today_stats: {
+            activities: [],
+            duration: 0
+        }
     };
     
     let activity: Activity;
@@ -87,7 +90,7 @@
 	<meta name="description" content="Svelte demo app" />
 </svelte:head>
 
-<Day data={day_activity} adjusted={activity.adjusted} stats={payload.today} />
+<Day data={day_activity} adjusted={activity.adjusted} stats={payload.today} today_stats={payload.today_stats} />
 <Week data={payload.week_stats} />
 
 <div class="twice">

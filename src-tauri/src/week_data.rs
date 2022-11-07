@@ -4,7 +4,7 @@ use chrono::{Local, Datelike, Duration};
 use log::error;
 use ts_rs::TS;
 
-use crate::{day_record::DayRecord, records::Record, week_stats::WeekStats, data::Activity, day_record_file::DayRecordFile};
+use crate::{day_record::{DayRecord, DayStats}, records::Record, week_stats::WeekStats, data::Activity, day_record_file::DayRecordFile};
 
 pub struct WeekData {
     days: HashMap<u32, DayRecord>,
@@ -15,6 +15,7 @@ pub struct WeekData {
 pub struct Payload {
     activity: Activity,
     today: u32,
+    today_stats: DayStats,
     week_stats: WeekStats
 }
 
@@ -81,9 +82,13 @@ impl WeekData {
         let today = self.get_today();
         let act = today.get_activity();
 
+        let today_stats = today.get_stats(act_dur);
+        let dur_secs = today_stats.duration.as_secs();
+
         Payload {
             activity: act,
-            today: (today.get_stats(act_dur).duration.num_seconds()/60i64) as u32,
+            today_stats,
+            today: (dur_secs/60u64) as u32,
             week_stats: WeekStats::from(self.days.values())
         }
     }
