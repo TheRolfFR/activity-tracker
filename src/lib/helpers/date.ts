@@ -1,4 +1,4 @@
-function padTo2Digits(num: number) {
+function padTo2Digits(num: number|string) {
     return String(num).padStart(2, '0');
 }
 
@@ -9,4 +9,4 @@ const getHour = (s: number) => {
     + 'h' + padTo2Digits(now.getMinutes());
 };
 
-export { getHour };
+export { getHour, padTo2Digits };

@@ -80,11 +80,18 @@ impl DayRecord {
     }
 
     /// Computes stats from clicks and inputs
-    pub fn get_stats(&self, act_duration: chrono::Duration) -> DayStats {
+    pub fn get_stats(&mut self, act_duration: chrono::Duration) -> DayStats {
         let mut res = DayStats {
             activities: vec![],
             duration: Duration::ZERO
         };
+
+        self.clicks.sort_by(
+            |a,b| b.date.cmp(&a.date)
+        );
+        self.inputs.sort_by(
+            |a,b| b.date.cmp(&a.date)
+        );
 
         // get all timestamps
         let mut measures: HashMap<MeasureDate, MeasureCount> = HashMap::new();

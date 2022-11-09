@@ -1,5 +1,7 @@
 use std::{fs::File, path::PathBuf, io::Read};
 
+use chrono::Utc;
+
 use crate::{day_record::DayRecord, week_data::WeekData};
 
 pub struct DayRecordFile;
@@ -22,8 +24,12 @@ impl DayRecordFile {
 
         if let Some(mut f) = file {
             f.read_to_string(&mut buff).unwrap();
-            if let Ok(val) = serde_json::from_str(&buff) {
-                val
+            if let Ok(val) = serde_json::from_str::<DayRecord>(&buff) {
+                if Utc::now().signed_duration_since(val.date).num_hours() >= 6*24 {
+                    DayRecord::new()
+                } else {
+                    val
+                }
             } else {
                 dbg!(&buff);
                 panic!("Panicked while loading {day} activity");

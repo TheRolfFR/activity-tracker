@@ -21,7 +21,8 @@ export interface Payload {
     activity: Activity,
     today: number,
     week_stats: WeekStats,
-    today_stats: DayStats
+    today_stats: DayStats,
+    version: string
 }
 
 export type WeekActivity = Array<Activity>;

@@ -1,4 +1,4 @@
-use std::collections::hash_map::Values;
+use std::collections::hash_map::ValuesMut;
 use chrono::Duration;
 use ts_rs::TS;
 
@@ -10,8 +10,8 @@ pub struct WeekStats {
     pub done: u32
 }
 
-impl<'a> From<Values<'a, u32, DayRecord>> for WeekStats {
-    fn from(values: Values<u32,DayRecord>) -> Self {
+impl<'a> From<ValuesMut<'a, u32, DayRecord>> for WeekStats {
+    fn from(values: ValuesMut<u32,DayRecord>) -> Self {
         let act_dur = Duration::minutes(5);
         let stats = values.into_iter().fold(WeekStats {
             done: 0

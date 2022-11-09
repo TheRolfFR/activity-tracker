@@ -107,11 +107,13 @@ fn main() {
         .setup(move |app| {
 
             let main_window = app.get_window("main").unwrap();
+            let ver = app.package_info().version.to_string();
             
             thread::spawn(move || {
                 loop {
                     match payload_rchan.recv() {
-                        Ok(payload) => {
+                        Ok(mut payload) => {
+                            payload.version = format!("{}-{}", ver, env!("GIT_HASH"));
                             main_window.emit("activity", payload).ok();
                         },
                         Err(_) => {

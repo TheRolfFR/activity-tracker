@@ -36,7 +36,8 @@
         today_stats: {
             activities: [],
             duration: 0
-        }
+        },
+        version: ''
     };
     
     let activity: Activity;
@@ -81,6 +82,10 @@
             console.log('payload', payload);
             // @ts-ignore
             window.payload = payload;
+            
+            let titleElement = document.getElementById('version');
+            if(!titleElement) return;
+            titleElement.innerText = payload.version;
         })
     })
 </script>

@@ -3,7 +3,7 @@
     import type { DayActivityStat } from "$bindings/DayActivityStat";
 	import type { Measure } from "$bindings/Measure";
     import { colorRamp } from "$lib/helpers/color";
-    import { getHour } from "$lib/helpers/date";
+    import { getHour, padTo2Digits } from "$lib/helpers/date";
 
     export let activities: ActivitySeries<Measure<number>>;
     export let activity_stats: DayActivityStat[];
@@ -71,7 +71,12 @@
 
     const ramp = colorRamp('#2d333b', '#39d353', 6);
 
-    let activities_percented: Record<number,[number, number, string][]> = {};
+    let activities_percented: Record<number, {
+        top: string,
+        height: string,
+        'background-color': string,
+        title: string
+    }[]> = {};
     $: {
         let min = Infinity;
         let max = 0;
@@ -105,35 +110,85 @@
             let top = d_m/60;
             let height = 1/60;
             let color = ramp[mapIndex(p.count)];
-            activities_percented[d_h].push([top, height, color]);
+            activities_percented[d_h].push({
+                top: top*100 + '%',
+                height: height*100 + '%',
+                'background-color': color,
+                title: getHour(p.date) + ' - ' + p.count
+            });
         });
+        
+        console.log(activity_shorts)
+        console.log(date_activity_stats)
+    }
 
-        console.log(activities_percented)
+    function cssStringify(obj: {[key: string]: string}) {
+        return Object.keys(obj).map(k => `${k}: ${obj[k]}`).join(';')
+    }
+
+    function getShorts(hour: string): ActivityShort[] {
+        return activity_shorts[Number.parseInt(hour, 10)] || []
     }
 </script>
 
 <div class="activities">
-    <!-- {#each groups as group}
-        <div class="activity-group">
-            {#each group as activity}
-                <div class="activity" {...activity}></div>
+    {#each Object.entries(activities_percented) as [hour,group]}
+        <div class="hour">
+            <div class="hour-text">{padTo2Digits(hour)}</div>
+            {#each getShorts(hour) as short}
+                <div
+                    class="short"
+                    style:top={short.from*100+'%'}
+                    style:height={(short.to-short.from)*100+'%'}
+                    title={short.title}
+                ></div>
             {/each}
+            <div class="activity-group">
+                {#each group as activity}
+                    <div class="activity" style={cssStringify(activity)} title={activity.title}></div>
+                {/each}
+            </div>
         </div>
-    {/each} -->
+    {/each}
     <div class="group"></div>
 </div>
 
 <style scoped>
-    .activities, .activity-group {
+    .activities {
+        height: 100%;
+        width: 100%;
+    }
+    .activities, .hour, .activity-group {
         display: flex;
         flex: 1 1 auto;
-        gap: 1px;
+    }
+    .hour, .activity-group {
+        position: relative;
+        height: 100%;
+    }
+    .hour {
+        align-items: flex-start;
+        width: 12px;
+        text-align: center;
+    }
+    .hour-text {
+        position: relative;
+        display: inline-block;
+        z-index: 2;
     }
     .activity-group {
-        flex-direction: column;
-        align-items: flex-end;
+        margin: 0 3px;
     }
     .activity {
+        position: absolute;
+        left: 0;
+        right: 0;
         border-radius: 2px;
+    }
+    .short {
+        position: absolute;
+        width: 4px;
+        left: 4px;
+        background: #39d353;
     }
 </style>

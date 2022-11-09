@@ -16,7 +16,8 @@ pub struct Payload {
     activity: Activity,
     today: u32,
     today_stats: DayStats,
-    week_stats: WeekStats
+    week_stats: WeekStats,
+    pub version: String
 }
 
 impl WeekData {
@@ -89,7 +90,8 @@ impl WeekData {
             activity: act,
             today_stats,
             today: (dur_secs/60u64) as u32,
-            week_stats: WeekStats::from(self.days.values())
+            week_stats: WeekStats::from(self.days.values_mut()),
+            version: String::new()
         }
     }
 

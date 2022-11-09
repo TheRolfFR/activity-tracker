@@ -15,16 +15,24 @@
 	onMount(async () => {
 		appWindow = (await import('@tauri-apps/api/window')).appWindow;
 	});
+
+    let closeFocus: boolean = false;
+
+    const handleClose = (e: Event) => {
+        e.preventDefault()
+        closeFocus = false;
+        appWindow.hide()
+    } 
 </script>
 
 <div id="title-bar" data-tauri-drag-region>
 	<div id="title" data-tauri-drag-region>
         <img height="14" src={Favicon} alt="A"/><span>
-            <TextBlock data-tauri-drag-region variant="bodyStrong">Activity tracker</TextBlock>
+            <TextBlock data-tauri-drag-region variant="bodyStrong" data:title="Activity tracker" title="" id="window-title">Activity tracker</TextBlock> <TextBlock variant="caption" id="version" style="opacity: 0.7"></TextBlock>
         </span>
 	</div>
 	<div>
-		<div class="titlebar-button" id="titlebar-close" on:click={() => appWindow.hide()}>
+		<div class="titlebar-button" id="titlebar-close" on:click={handleClose} on:mouseenter={() => closeFocus = true} on:mouseleave={() => closeFocus = false} class:hover={closeFocus}>
 			<img src="https://api.iconify.design/mdi:close.svg?color=white" alt="close" />
 		</div>
 	</div>
@@ -121,13 +129,13 @@
 		height: 30px;
         text-align: center;
 	}
-	.titlebar-button:hover {
+	.titlebar-button:hover:not(.hover) {
 		background: rgba(255,255,255,0.15);
 	}
     .titlebar-button:last-child {
         border-top-right-radius: 0.5em;
     }
-    .titlebar-button:last-child:hover {
+    .titlebar-button:last-child.hover {
         background: #D41325;
     }
 </style>
