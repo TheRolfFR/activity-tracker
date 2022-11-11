@@ -5,6 +5,7 @@
 	import type { WebviewWindow } from '@tauri-apps/api/window';
 	import { TextBlock } from 'fluent-svelte';
     import Favicon from '$lib/assets/favicon.png';
+	import Close from '$lib/assets/close.svg';
 
 	export const prerender = true;
 	export const ssr = false;
@@ -33,7 +34,7 @@
 	</div>
 	<div>
 		<div class="titlebar-button" id="titlebar-close" on:click={handleClose} on:mouseenter={() => closeFocus = true} on:mouseleave={() => closeFocus = false} class:hover={closeFocus}>
-			<img src="https://api.iconify.design/mdi:close.svg?color=white" alt="close" />
+			<img src={Close} alt="close" />
 		</div>
 	</div>
 </div>
@@ -52,6 +53,9 @@
 	}
 	:global(body) {
 		color: var(--fds-text-primary);
+	}
+	:global(::selection) {
+		background-color: transparent !important;
 	}
 
 	main {
@@ -128,9 +132,6 @@
 		width: 30px;
 		height: 30px;
         text-align: center;
-	}
-	.titlebar-button:hover:not(.hover) {
-		background: rgba(255,255,255,0.15);
 	}
     .titlebar-button:last-child {
         border-top-right-radius: 0.5em;

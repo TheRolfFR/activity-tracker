@@ -124,7 +124,10 @@ impl DayRecord {
             let opt_count = measures.get(&cur_date);
 
             match (opt_count, opt_last_activity.as_mut()) {
-                (None, _) => {},
+                (None, None) => {},
+                (None, Some(last_activity)) => {
+                    dbg!(last_activity);
+                },
                 (Some(cur_count), Some(last_activity)) => {
                     let computed_duration = cur_date.signed_duration_since(last_activity.to);
                     if computed_duration <= act_duration {
@@ -158,7 +161,11 @@ impl DayRecord {
             let dur = act.to.signed_duration_since(act.from).min(act_duration);
             let dur_secs: u64 = dur.num_seconds().try_into().unwrap();
             res.duration = res.duration + Duration::from_secs(dur_secs*60);
+
+            res.activities.push(act);
         }
+
+        // dbg!(&dates);
 
         res
     }

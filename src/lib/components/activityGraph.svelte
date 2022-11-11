@@ -4,6 +4,7 @@
 	import type { Measure } from "$bindings/Measure";
     import { colorRamp } from "$lib/helpers/color";
     import { getHour, padTo2Digits } from "$lib/helpers/date";
+	import { onMount } from "svelte";
 
     export let activities: ActivitySeries<Measure<number>>;
     export let activity_stats: DayActivityStat[];
@@ -27,7 +28,7 @@
         activity_shorts = {};
         let min_date = Infinity;
         let max_date = 0;
-        date_activity_stats = activity_stats.map((e)=>{
+        date_activity_stats = (activity_stats || []).map((e)=>{
             min_date = Math.min(min_date, e.from);
             max_date = Math.max(max_date, e.to);
 
@@ -52,8 +53,8 @@
 
                 // ajout du short
                 activity_shorts[h].push({
-                    from: st_min/59,
-                    to: en_min/59,
+                    from: st_min,
+                    to: en_min,
                     title
                 });
 
@@ -67,16 +68,25 @@
                 count: e.count
             };
         });
+
+        onMount(() => {
+            // @ts-ignore
+            window.date_activity_stats = date_activity_stats;
+            // @ts-ignore
+            window.activity_shorts = activity_shorts;
+        });
     }
 
     const ramp = colorRamp('#2d333b', '#39d353', 6);
 
-    let activities_percented: Record<number, {
-        top: string,
-        height: string,
-        'background-color': string,
-        title: string
-    }[]> = {};
+    const TOTAL = 100;
+    const N = 60;
+
+    let activity_props: Record<number, // hour
+        Record<number, // minute
+            { style: string, title: string }
+        >
+    > = {};
     $: {
         let min = Infinity;
         let max = 0;
@@ -100,27 +110,24 @@
             return Math.floor(percent*ramp.length);
         }
 
-        activities_percented = {};
+        activity_props = {};
         activities.points.forEach(p => {
             let d =  new Date(p.date *1000);
             let d_h = d.getHours();
             let d_m = d.getMinutes();
-            if(!(d_h in activities_percented)) activities_percented[d_h] = [];
+            if(!(d_h in activity_props)) activity_props[d_h] = {};
 
-            let top = d_m/60;
-            let height = 1/60;
             let color = ramp[mapIndex(p.count)];
-            activities_percented[d_h].push({
-                top: top*100 + '%',
-                height: height*100 + '%',
-                'background-color': color,
+            activity_props[d_h][d_m] = ({
+                style: cssStringify({ 'background-color': color }),
                 title: getHour(p.date) + ' - ' + p.count
             });
         });
         
-        console.log(activity_shorts)
-        console.log(date_activity_stats)
+        console.log(activity_props)
     }
+    $: hours = Object.keys(activity_props);
+    console.log(hours)
 
     function cssStringify(obj: {[key: string]: string}) {
         return Object.keys(obj).map(k => `${k}: ${obj[k]}`).join(';')
@@ -129,23 +136,27 @@
     function getShorts(hour: string): ActivityShort[] {
         return activity_shorts[Number.parseInt(hour, 10)] || []
     }
+
+    function getActivityProps(hour: string, minute: number) {
+        return activity_props[Number.parseInt(hour,10)][minute] || {}
+    }
 </script>
 
 <div class="activities">
-    {#each Object.entries(activities_percented) as [hour,group]}
+    {#each hours as hour}
         <div class="hour">
             <div class="hour-text">{padTo2Digits(hour)}</div>
-            {#each getShorts(hour) as short}
-                <div
-                    class="short"
-                    style:top={short.from*100+'%'}
-                    style:height={(short.to-short.from)*100+'%'}
-                    title={short.title}
-                ></div>
-            {/each}
             <div class="activity-group">
-                {#each group as activity}
-                    <div class="activity" style={cssStringify(activity)} title={activity.title}></div>
+                {#each getShorts(hour) as short}
+                    <div
+                        class="short"
+                        style:left={(6*short.from) +'px'}
+                        style:width={(6*(short.to+1-short.from)-2)+'px'}
+                        title={short.title}
+                    ></div>
+                {/each}
+                {#each Array(60) as _ , i}
+                    <div class="activity" {...getActivityProps(hour, i)}></div>
                 {/each}
             </div>
         </div>
@@ -155,40 +166,56 @@
 
 <style scoped>
     .activities {
+        flex-direction: column;
         height: 100%;
         width: 100%;
+        gap: 2px;
     }
     .activities, .hour, .activity-group {
         display: flex;
         flex: 1 1 auto;
     }
     .hour, .activity-group {
-        position: relative;
         height: 100%;
     }
     .hour {
         align-items: flex-start;
-        width: 12px;
+        position: relative;
+        width: 100%;
         text-align: center;
     }
     .hour-text {
         position: relative;
         display: inline-block;
         z-index: 2;
+        font-size: 16px;
+        line-height: 16px;
+        height: 16px;
+        width: 17px;
+        padding-right: 3px;
+        text-align: right;
     }
     .activity-group {
-        margin: 0 3px;
+        position: relative;
+        gap: 2px;
+        justify-items: flex-start;
     }
     .activity {
-        position: absolute;
-        left: 0;
-        right: 0;
+        width: 4px;
+        height: 100%;
         border-radius: 2px;
+    }
+    .hour:hover .short {
+        opacity: 0.3;
     }
     .short {
         position: absolute;
-        width: 4px;
-        left: 4px;
-        background: #39d353;
+        height: 4px;
+        top: 4px;
+        background: #ccc;
+        border-radius: 2px;
+        opacity: 0;
+        z-index: 3;
+        transition: opacity 0.2s ease;
     }
 </style>

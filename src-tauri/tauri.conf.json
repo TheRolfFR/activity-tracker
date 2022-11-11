@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "activity-tracker",
-    "version": "0.5.0"
+    "version": "0.6.0"
   },
   "tauri": {
     "allowlist": {
@@ -60,10 +60,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 385,
-        "resizable": false,
-        "title": "Work tracker",
-        "width": 500,
+        "height": 390,
+        "resizable": true,
+        "title": "Activity tracker",
+        "width": 525,
         "decorations": false,
         "skipTaskbar": true,
         "alwaysOnTop": true,

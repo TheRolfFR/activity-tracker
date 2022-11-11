@@ -71,7 +71,7 @@
 
 <style scoped>
     #title {
-        margin: 8px 0;
+        padding: 0 0 8px;
         opacity: 0.7;
         display: flex;
         align-items: center;

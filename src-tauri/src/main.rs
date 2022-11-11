@@ -24,6 +24,7 @@ mod day_record_file;
 mod records;
 
 mod threads;
+use tauri_plugin_window_state::AppHandleExt;
 use threads::*;
 use week_data::Payload;
 
@@ -93,7 +94,16 @@ fn main() {
               // and move it to another function or thread
               match id.as_str() {
                 "quit" => {
-                  std::process::exit(0);
+                  app.save_window_state()
+                  .and_then(|_| -> Result<(), tauri_plugin_window_state::Error> {
+                    log::info!("Successully saved window state");
+                    Ok(())
+                  })
+                  .or_else(|_| -> Result<(), ()> {
+                    log::error!("Failed to save window state");
+                    Ok(())
+                  }).ok();
+                  app.exit(0);
                 }
                 "hide" => {
                   let window = app.get_window("main").unwrap();

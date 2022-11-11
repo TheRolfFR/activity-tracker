@@ -21,7 +21,7 @@
 <div id="day">
     <div id="day-graph" on:click={() => visible = !visible}>
         <div style="display: {visible ? 'block' : 'none'};">
-            <Graph title="Day activity" data={data} width={343} type="line" />
+            <Graph title="Day activity" data={data} width={343} type="line" color="#39d353" />
         </div>
         <div style="display: {visible ? 'none' : 'block'};">
             <ActivityGraph activity_stats={today_stats.activities} activities={data} />
@@ -41,7 +41,8 @@
     #day #day-graph {
         align-self: stretch;
         flex-shrink: 1;
-        height: 132px;
+        height: 142px;
+        overflow: auto;
         /* background: rgba(255,255,255,0.3); */
     }
     #day-graph > div {
