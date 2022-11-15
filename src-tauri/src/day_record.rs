@@ -160,7 +160,7 @@ impl DayRecord {
         if let Some(act) = opt_last_activity {
             let dur = act.to.signed_duration_since(act.from).min(act_duration);
             let dur_secs: u64 = dur.num_seconds().try_into().unwrap();
-            res.duration = res.duration + Duration::from_secs(dur_secs*60);
+            res.duration = res.duration + Duration::from_secs(dur_secs);
 
             res.activities.push(act);
         }
