@@ -31,7 +31,7 @@ jobs:
               name: `Activity tracker v${process.env.PACKAGE_VERSION}`,
               body: 'Take a look at the assets to download and install this app.',
               make_latest: 'true',
-              prerelease: true
+              prerelease: false
             })
             
             return data.id
@@ -63,4 +63,4 @@ jobs:
         releaseName: "Activity tracker v__VERSION__"
         releaseBody: "See the assets to download this version and install."
         releaseDraft: false
-        prerelease: true
+        prerelease: false
