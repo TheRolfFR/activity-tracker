@@ -30,7 +30,7 @@ jobs:
               tag_name: `app-v${process.env.PACKAGE_VERSION}`,
               name: `Activity tracker v${process.env.PACKAGE_VERSION}`,
               body: 'Take a look at the assets to download and install this app.',
-              make_latest: true,
+              make_latest: 'true',
               prerelease: true
             })
             
