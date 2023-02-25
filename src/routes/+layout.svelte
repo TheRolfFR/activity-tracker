@@ -11,6 +11,7 @@
 	export const ssr = false;
 
 	import { onMount } from 'svelte';
+	import { invoke } from '@tauri-apps/api/tauri';
 
 	let appWindow: WebviewWindow;
 	onMount(async () => {
@@ -23,16 +24,24 @@
         e.preventDefault()
         closeFocus = false;
         appWindow.hide()
-    } 
+    }
+
+	const openAlt = async () => {
+		invoke('open_menu_handle')
+		.catch(err => {
+			console.error(err)
+		})
+	}
 </script>
 
 <div id="title-bar" data-tauri-drag-region>
 	<div id="title" data-tauri-drag-region>
-        <img height="14" src={Favicon} alt="A"/><span>
-            <TextBlock data-tauri-drag-region variant="bodyStrong" data:title="Activity tracker" title="" id="window-title">Activity tracker</TextBlock> <TextBlock variant="caption" id="version" style="opacity: 0.7"></TextBlock>
+        <img height="14" src={Favicon} alt="A" on:click={openAlt} on:keypress={() => {}}/><span>
+            <TextBlock data-tauri-drag-region variant="bodyStrong" data:title="Activity tracker" title="" id="window-title">Activity tracker</TextBlock> <TextBlock variant="caption" id="version" data-tauri-drag-region style="opacity: 0.7"></TextBlock>
         </span>
 	</div>
 	<div>
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<div class="titlebar-button" id="titlebar-close" on:click={handleClose} on:mouseenter={() => closeFocus = true} on:mouseleave={() => closeFocus = false} class:hover={closeFocus}>
 			<img src={Close} alt="close" />
 		</div>
@@ -46,8 +55,16 @@
 <div class="bg" id="bg"></div>
 
 <style>
+	:global(*) {
+		-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		box-sizing: border-box;
+		outline: none;
+	}
 	/* Some base styles to get things looking right. */
 	:global(main) {
+		--window-offset: 5px;
+		--window-border-radius: 0.5em;
         --spacing: 8px;
         font-family: var(--fds-font-family-small);
 	}
@@ -57,16 +74,28 @@
 	:global(::selection) {
 		background-color: transparent !important;
 	}
+	
+    :global(.content-dialog-smoke) {
+        border-radius: var(--window-border-radius);
+        left: var(--window-offset);
+        right: var(--window-offset);
+        bottom: var(--window-offset);
+        top: var(--window-offset);
+        block-size: auto !important;
+        inline-size: auto !important;
+        inset-inline-start: var(--window-offset) !important;
+        inset-block-start: var(--window-offset) !important;
+    }
 
 	main {
 		padding: 0 var(--spacing) var(--spacing);
-		border-radius: 0.5em;
+		border-radius: var(--window-border-radius);
 		position: fixed;
 		overflow: auto;
-        top: 37px;
-        left: 5px;
-        right: 5px;
-        bottom: 5px;
+        top: calc(var(--window-offset) + 32px);
+        left: var(--window-offset);
+        right: var(--window-offset);
+        bottom: var(--window-offset);
         z-index: 2;
 	}
 
@@ -109,6 +138,7 @@
 		left: 5px;
 		right: 5px;
 		z-index: 10;
+        margin-bottom: 352px;
 	}
 
 	#title {
@@ -124,6 +154,14 @@
         display: inline-block;
         vertical-align: middle;
     }
+
+	:global(#version) {
+		opacity: 0 !important;
+		transition: opacity 0.2s ease;
+	}
+	#title img:hover :global(+ span #version) {
+		opacity: inherit !important;
+	}
 
 	.titlebar-button {
 		display: inline-flex;

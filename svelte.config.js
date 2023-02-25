@@ -10,6 +10,7 @@ const config = {
 	kit: {
 		adapter: adapter(),
         alias: {
+            '$src/*': './src/*',
             '$bindings/*': './src-tauri/bindings/*',
             '$components/*': './src/lib/components/*'
           }

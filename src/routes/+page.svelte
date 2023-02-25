@@ -1,12 +1,14 @@
 <script lang="ts">
     import type { Event } from "@tauri-apps/api/event";
-    import type { ActivitySeries } from "$bindings/ActivitySeries";
-    import type { Measure } from "$bindings/Measure";
+    import { invoke } from '@tauri-apps/api/tauri';
 
     import { onMount } from 'svelte';
+
+	import AdjustDialog from "$lib/islands/adjustDialog.svelte";
     import Graph from '$components/graph.svelte';
     import Day from '$lib/islands/day.svelte';
     import Week from '$lib/islands/week.svelte';
+
     import type { Activity, Payload } from "$lib/data";
 
     let payload: Payload = {
@@ -37,57 +39,43 @@
             activities: [],
             duration: 0
         },
-        version: ''
+        version: '',
+        week_payload: []
     };
     
     let activity: Activity;
-    let day_activity: ActivitySeries<Measure<number>> = {
-        labels: {
-            x: "act",
-            y: "amount"
-        },
-        points: []
-    };
-
-    $: {
-        activity = payload.activity;
-        activity.click_series.points.sort((a, b) => a.date - b.date);
-        activity.input_series.points.sort((a, b) => a.date - b.date);
-
-        let series_obj: Record<string, Measure<number>> = {};
-        const acts: ActivitySeries<Measure<number>>[] = [activity.click_series, activity.input_series];
-
-        acts.forEach(act => {
-            act.points.forEach(measure => {
-                if(! (measure.date in series_obj) ) {
-                    series_obj[measure.date] = {
-                        count: 0,
-                        date: measure.date
-                    };
-                }
-
-                series_obj[measure.date].count+=measure.count;
-            });
-        });
-        
-        // sort by increasing date
-        day_activity.points = Object.values(series_obj).sort((a, b) => a.date - b.date);
-    }
-
+    $: today_adjusted = activity ? activity.adjusted : 0;
     onMount(async () => {
         const { listen } = await import("@tauri-apps/api/event")
 
         listen('activity', (event: Event<Payload>) => {
             payload = event.payload;
-            console.log('payload', payload);
             // @ts-ignore
             window.payload = payload;
+            activity = payload.activity;
             
-            let titleElement = document.getElementById('version');
-            if(!titleElement) return;
-            titleElement.innerText = payload.version;
+            let versionElement = document.getElementById('version');
+            if(!versionElement || versionElement.innerText.trim() !== '') return;
+            versionElement.innerText = payload.version;
         })
     })
+
+    let openadjust = false;
+    let adjusttime = [0,0] as [number,number];
+    function openAdjustDialog() {
+        adjusttime = [Math.floor(activity.adjusted/60), activity.adjusted%60]
+        openadjust = true;
+    }
+
+    function openWeekWindow() {
+        invoke('open_week_window')
+        .then(() => {
+            console.warn('Opened window')
+        }).catch((err) => {
+            console.error(err)
+            console.error('Failed to open window')
+        });
+    }
 </script>
 
 <svelte:head>
@@ -95,28 +83,50 @@
 	<meta name="description" content="Svelte demo app" />
 </svelte:head>
 
-<Day data={day_activity} adjusted={activity.adjusted} stats={payload.today} today_stats={payload.today_stats} />
-<Week data={payload.week_stats} />
+<AdjustDialog bind:openadjust bind:adjusttime />
 
-<div class="twice">
-    <div>
-        <Graph
-            title={"Click activity"}
-            data={activity.click_series}
-            avg={activity.clicks_per_minute}
-        />
+<div id="container">
+    <div id="top">
+        <Day activity={activity} adjusted={today_adjusted} stats={payload.today} today_stats={payload.today_stats} on:adjust={openAdjustDialog} />
     </div>
-    <div>
-        <Graph
-            title={"Input activity"}
-            data={activity.input_series}
-            avg={activity.inputs_per_minute}
-            color={"#8B12AE"}
-        />
+    
+    <div id="bottom">
+        <Week data={payload.week_stats} on:openweek={openWeekWindow} />
+        
+        <div class="twice">
+            {#if activity}
+            <div>
+                <Graph
+                    title={"Click activity"}
+                    data={activity.click_series}
+                    avg={activity.clicks_per_minute}
+                />
+            </div>
+            <div>
+                <Graph
+                    title={"Input activity"}
+                    data={activity.input_series}
+                    avg={activity.inputs_per_minute}
+                    color={"#8B12AE"}
+                />
+            </div>
+            {/if}
+        </div>
     </div>
 </div>
 
 <style>
+    #container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    #top {
+        flex-grow: 1;
+    }
+    #top :global(> *) {
+        height: 100%;
+    }
     .twice {
         display: flex;
         flex: 1 1 auto;

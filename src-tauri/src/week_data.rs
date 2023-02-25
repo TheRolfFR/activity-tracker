@@ -12,11 +12,21 @@ pub struct WeekData {
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, TS)]
+#[ts(export)]
+pub struct DayPayload {
+    activity: Activity,
+    stats: DayStats,
+    time: u64,
+    adjusted: i32
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, TS)]
 pub struct Payload {
     activity: Activity,
     today: u32,
     today_stats: DayStats,
     week_stats: WeekStats,
+    week_payload: HashMap<u32, DayPayload>,
     pub version: String
 }
 
@@ -72,6 +82,7 @@ impl WeekData {
         today.increase_input(record.inputs);
     }
 
+    /// Adjust time with desired value in minute
     pub(crate) fn adjust_today(&mut self, adjusted: i32) {
         let today = self.get_today();
 
@@ -86,9 +97,26 @@ impl WeekData {
         let today_stats = today.get_stats(act_dur);
         let dur_secs = today_stats.duration.as_secs();
 
+        let week_payload = self.days.iter().fold(HashMap::new(), |mut acc, (day, data)| {
+            let stats = data.get_stats(act_dur);
+            let time = stats.duration.as_secs();
+
+            let this_day = DayPayload {
+                activity: data.get_activity(),
+                adjusted: data.adjusted,
+                stats,
+                time 
+            };
+
+            acc.insert(day.clone(), this_day);
+
+            return acc;
+        });
+
         Payload {
             activity: act,
             today_stats,
+            week_payload,
             today: (dur_secs/60u64) as u32,
             week_stats: WeekStats::from(self.days.values_mut()),
             version: String::new()

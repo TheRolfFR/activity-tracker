@@ -2,13 +2,18 @@
 	import type { WeekStats } from "$bindings/WeekStats";
 	import Stat from "$components/stat.svelte";
     import { total_store } from "$lib/stores";
-	import { onDestroy } from "svelte";
+	import { createEventDispatcher, onDestroy } from "svelte";
 
     let total_week: number;
     const unsubscribe = total_store.subscribe(value => {
         total_week = value;
     });
     onDestroy(unsubscribe);
+
+	const dispatch = createEventDispatcher();
+    function openWeek() {
+        dispatch('openweek');
+    }
 
     export let data: WeekStats;
 
@@ -28,7 +33,8 @@
 </script>
 
 <div class="flex">
-    <Stat title='Week activity' value={done}></Stat>
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div on:click={openWeek}><Stat title='Week activity' value={done}></Stat></div>
     <Stat title='Time left' value={left}></Stat>
     <Stat title='Total' value={total}></Stat>
 </div>

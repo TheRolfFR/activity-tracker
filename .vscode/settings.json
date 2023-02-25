@@ -12,6 +12,12 @@
         "**/.project": true,
         "**/.settings": true,
         "**/.factorypath": true,
-        "**/node_modules": true
-    }
+        "**/node_modules": false
+    },
+    "json.schemas": [{
+        "fileMatch": [
+            "tauri.conf.json",
+        ],
+        "url": "https://raw.githubusercontent.com/tauri-apps/tauri/1.2/tooling/cli/schema.json"
+    }]
 }

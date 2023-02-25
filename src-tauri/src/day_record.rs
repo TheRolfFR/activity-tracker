@@ -7,7 +7,13 @@ use serde_with::serde_as;
 use sorted_vec::SortedSet;
 use ts_rs::TS;
 
-
+fn add(u: u64, i: i32) -> Option<u64> {
+    if i.is_negative() {
+        u.checked_sub(i.wrapping_abs() as u32 as u64)
+    } else {
+        u.checked_add(i as u64)
+    }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
 pub struct DayRecord {
@@ -80,16 +86,19 @@ impl DayRecord {
     }
 
     /// Computes stats from clicks and inputs
-    pub fn get_stats(&mut self, act_duration: chrono::Duration) -> DayStats {
+    pub fn get_stats(&self, act_duration: chrono::Duration) -> DayStats {
         let mut res = DayStats {
             activities: vec![],
             duration: Duration::ZERO
         };
 
-        self.clicks.sort_by(
+        let mut clicks = self.clicks.clone();
+        let mut inputs = self.inputs.clone();
+
+        clicks.sort_by(
             |a,b| b.date.cmp(&a.date)
         );
-        self.inputs.sort_by(
+        inputs.sort_by(
             |a,b| b.date.cmp(&a.date)
         );
 
@@ -97,7 +106,7 @@ impl DayRecord {
         let mut measures: HashMap<MeasureDate, MeasureCount> = HashMap::new();
         let mut dates: SortedSet <MeasureDate> = SortedSet::new();
 
-        for measure in self.clicks.iter() {
+        for measure in clicks.iter() {
             dates.find_or_insert(measure.date);
             let possible_count = measures.get_mut(&measure.date);
 
@@ -108,7 +117,7 @@ impl DayRecord {
             }
         }
 
-        for measure in self.inputs.iter() {
+        for measure in inputs.iter() {
             dates.find_or_insert(measure.date);
             let possible_count = measures.get_mut(&measure.date);
 
@@ -165,14 +174,19 @@ impl DayRecord {
             res.activities.push(act);
         }
 
-        // dbg!(&dates);
+        // add adjust
+        let int_dur = res.duration.as_secs();
+        res.duration = Duration::from_secs(add(int_dur, self.adjusted*60).unwrap_or(0));
 
         res
     }
 
     /// Creates act
-    pub(crate) fn get_activity(&mut self) -> Activity {
-        self.clicks.sort_by(
+    pub(crate) fn get_activity(&self) -> Activity {
+        let mut clicks = self.clicks.clone();
+        let mut inputs = self.inputs.clone();
+
+        clicks.sort_by(
             |a,b| b.date.cmp(&a.date)
         );
         let five_clicks = self.clicks.clone();
@@ -181,7 +195,7 @@ impl DayRecord {
             |acc, cur| (acc.0 + cur.count, acc.1 + 1)
         );
         
-        self.inputs.sort_by(
+        inputs.sort_by(
             |a,b| b.date.cmp(&a.date)
         );
         let five_inputs = self.inputs.clone();

@@ -123,8 +123,6 @@
                 title: getHour(p.date) + ' - ' + p.count
             });
         });
-        
-        console.log(activity_props)
     }
     $: hours = Object.keys(activity_props);
     console.log(hours)

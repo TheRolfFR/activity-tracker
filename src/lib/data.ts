@@ -1,3 +1,4 @@
+import { DayPayload } from './../../src-tauri/bindings/DayPayload';
 import type { DayStats } from '$bindings/DayStats';
 import type { WeekStats } from '$bindings/WeekStats';
 import type { ActivitySeries } from "$bindings/ActivitySeries";
@@ -20,6 +21,7 @@ export interface ActDur {
 export interface Payload {
     activity: Activity,
     today: number,
+    week_payload: DayPayload[],
     week_stats: WeekStats,
     today_stats: DayStats,
     version: string

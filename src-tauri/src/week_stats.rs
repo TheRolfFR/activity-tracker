@@ -7,7 +7,8 @@ use crate::day_record::DayRecord;
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, TS)]
 #[ts(export)]
 pub struct WeekStats {
-    pub done: u32
+    #[ts(type = "number")]
+    pub done: u64
 }
 
 impl<'a> From<ValuesMut<'a, u32, DayRecord>> for WeekStats {
@@ -18,7 +19,7 @@ impl<'a> From<ValuesMut<'a, u32, DayRecord>> for WeekStats {
         }, |mut acc,cur| {
             let stats = cur.get_stats(act_dur);
             let secs = stats.duration.as_secs();
-            acc.done += secs as u32;
+            acc.done += secs;
             acc
         });
 
