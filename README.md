@@ -12,6 +12,14 @@ Activity Tracker
     <img src="./Images/activity-tracker.png" />
 </div>
 
+## Technologies
+
+Front-end: Svelte and <a href="https://fluent-svelte.vercel.app/" href="_blank" >Fluent Svelte</a> for visual components, <a href="https://www.npmjs.com/package/svelte-tiny-linked-charts" target="_blank">svelte-tiny-linked-charts</a> for charts visualization.
+
+Back-end: TypeScript bindings for Svelte are provided by the <a href="https://crates.io/crates/ts-rs" target="_blank">ts-rs</a> crate. 
+serde and serde_json for serialization. <a href="https://crates.io/crates/rdev" targret="_blank">rdev</a> for global input events. 
+Massive use of <a href="https://doc.rust-lang.org/std/sync/mpsc/fn.channel.html">MPSC channels</a> in Rust code because data goes only one way.
+
 ## How to develop
 
 Recommended IDE Setup:
