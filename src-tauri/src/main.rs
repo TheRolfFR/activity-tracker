@@ -18,6 +18,8 @@ use tauri::Manager;
 use tauri_plugin_window_state;
 use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 
+use window_vibrancy::{ apply_mica, apply_blur, apply_acrylic };
+
 mod throttle;
 
 mod day_record;
@@ -35,8 +37,19 @@ mod week_stats;
 #[allow(dead_code)]
 #[tauri::command]
 fn open_week_window(app_handle: tauri::AppHandle) {
-    app_handle.get_window("week_data")
-    .and_then(|w| w.show().ok());
+    let opened_window = app_handle.get_window("week_data");
+    let window = match opened_window {
+        None => {
+            tauri::WindowBuilder::new(
+                &app_handle,
+                "week_data",
+                tauri::WindowUrl::App("/week_data".into())
+              ).build().unwrap();
+              app_handle.get_window("week_data").unwrap()
+        }
+        Some(w) => w
+    };
+    window.show().unwrap();
 }
 
 #[allow(dead_code)]
@@ -54,6 +67,10 @@ fn open_menu_handle(window: tauri::Window) {
     if let Err(err) = window.menu_handle().show() {
         error!("Failed to open menu {err}");
     }
+}
+
+fn saved_states() -> StateFlags {
+    StateFlags::VISIBLE|StateFlags::POSITION|StateFlags::SIZE
 }
 
 fn main() {
@@ -93,7 +110,10 @@ fn main() {
     tauri::Builder::default()
         .manage(adj_schan)
         .invoke_handler(tauri::generate_handler![adjust, open_menu_handle, open_week_window])
-        .plugin(tauri_plugin_window_state::Builder::default().build())
+        .plugin(tauri_plugin_window_state::Builder::default()
+            .with_state_flags(saved_states())
+            .build()
+        )
         .system_tray(system_tray)
         .on_system_tray_event(|app, event| match event {
             SystemTrayEvent::LeftClick {
@@ -107,7 +127,7 @@ fn main() {
                     } else {
                         main_window.show().ok();
                     }
-                    app.save_window_state(StateFlags::VISIBLE|StateFlags::POSITION|StateFlags::SIZE).ok();
+                    app.save_window_state(saved_states()).ok();
                 }
             },
             SystemTrayEvent::MenuItemClick { id, .. } => {
@@ -117,7 +137,7 @@ fn main() {
               // and move it to another function or thread
               match id.as_str() {
                 "quit" => {
-                  app.save_window_state(StateFlags::all())
+                  app.save_window_state(saved_states())
                   .and_then(|_| -> Result<(), tauri_plugin_window_state::Error> {
                     log::info!("Successully saved window state");
                     Ok(())
@@ -136,7 +156,7 @@ fn main() {
                   for w in app.windows().values() {
                     w.hide().unwrap();
                   }
-                  app.save_window_state(StateFlags::VISIBLE|StateFlags::POSITION|StateFlags::SIZE).ok();
+                  app.save_window_state(saved_states()).ok();
                 }
                 _ => {}
               }
@@ -146,8 +166,19 @@ fn main() {
         .setup(move |app| {
 
             let main_window = app.get_window("main").unwrap();
+
+            #[cfg(target_os = "windows")]
+            {
+                let all_windows = &app.windows();
+                for (_, win) in all_windows {
+                    apply_mica(&win, Some(true))
+                        .or_else(|_| apply_acrylic(&win, None))
+                        .or_else(|_| apply_blur(&win, None))
+                        .ok();
+                }
+            }
+
             let ver = app.package_info().version.to_string();
-            
             thread::spawn(move || {
                 loop {
                     match payload_rchan.recv() {

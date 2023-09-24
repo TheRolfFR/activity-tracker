@@ -12,6 +12,7 @@
 
 	const dispatch = createEventDispatcher();
     function openWeek() {
+        console.log("opeeen weeeek")
         dispatch('openweek');
     }
 

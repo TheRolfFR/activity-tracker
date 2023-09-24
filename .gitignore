@@ -36,3 +36,5 @@ node_modules
 
 # rust TS bindings
 src-tauri/bindings
+
+Images/icon.psd

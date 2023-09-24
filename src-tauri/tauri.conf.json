@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "activity-tracker",
-    "version": "0.7.0"
+    "version": "0.8.0"
   },
   "tauri": {
     "allowlist": {
@@ -63,10 +63,12 @@
         "minHeight": 358,
         "height": 390,
         "resizable": true,
+        "label": "main",
         "title": "Activity tracker",
         "width": 525,
         "decorations": false,
         "skipTaskbar": true,
+        "theme": "Dark",
         "alwaysOnTop": true,
         "transparent": true,
         "url": "/",
@@ -78,10 +80,9 @@
         "title": "Activity tracker: Week data",
         "width": 1050,
         "label": "week_data",
-        "decorations": false,
-        "skipTaskbar": true,
-        "alwaysOnTop": true,
         "transparent": true,
+        "decorations": false,
+        "skipTaskbar": false,
         "url": "/weekdata",
         "visible": false
       }

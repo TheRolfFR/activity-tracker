@@ -37,7 +37,8 @@
 <div id="title-bar" data-tauri-drag-region>
 	<div id="title" data-tauri-drag-region>
         <img height="14" src={Favicon} alt="A" on:click={openAlt} on:keypress={() => {}}/><span>
-            <TextBlock data-tauri-drag-region variant="bodyStrong" data:title="Activity tracker" title="" id="window-title">Activity tracker</TextBlock> <TextBlock variant="caption" id="version" data-tauri-drag-region style="opacity: 0.7"></TextBlock>
+            <TextBlock data-tauri-drag-region variant="bodyStrong" data:title="Activity tracker" title="" id="window-title">Activity tracker</TextBlock>
+			<TextBlock variant="caption" id="version" data-tauri-drag-region style="opacity: 0.7"></TextBlock>
         </span>
 	</div>
 	<div>
@@ -51,8 +52,6 @@
 <main>
 	<slot />
 </main>
-<div class="bg" id="fg"></div>
-<div class="bg" id="bg"></div>
 
 <style>
 	:global(*) {
@@ -60,16 +59,19 @@
 		-moz-box-sizing: border-box;
 		box-sizing: border-box;
 		outline: none;
+		--title-bar-height: 30px;
 	}
 	/* Some base styles to get things looking right. */
 	:global(main) {
-		--window-offset: 5px;
-		--window-border-radius: 0.5em;
+		--window-offset: 0;
+		--window-border-radius: 0;
         --spacing: 8px;
         font-family: var(--fds-font-family-small);
 	}
 	:global(body) {
 		color: var(--fds-text-primary);
+		display: flex;
+		flex-direction: column;
 	}
 	:global(::selection) {
 		background-color: transparent !important;
@@ -90,55 +92,27 @@
 	main {
 		padding: 0 var(--spacing) var(--spacing);
 		border-radius: var(--window-border-radius);
-		position: fixed;
 		overflow: auto;
-        top: calc(var(--window-offset) + 32px);
-        left: var(--window-offset);
-        right: var(--window-offset);
-        bottom: var(--window-offset);
         z-index: 2;
+		flex-grow: 1;
 	}
-
-    /* https://fluent-svelte.vercel.app/bloom-mica-light.png */
-    #bg {
-        background: url("https://fluent-svelte.vercel.app/bloom-mica-dark.png") 50%/cover no-repeat fixed;
-        opacity: .7;
-        z-index: -3;
-    }
-
-    #fg {
-		background-color: var(--fds-solid-background-base);
-        opacity: .7;
-        z-index: -2;
-		box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
-    }
-
-    .bg {
-        border-radius: 0.5em;
-        position: fixed;
-        top: 5px;
-        left: 5px;
-        right: 5px;
-        bottom: 5px;
-    }
 
 	#title-bar {
 		-webkit-padding-start: 0;
 		padding-inline-start: 0;
 		border-top-left-radius: 0;
 		border-top-right-radius: 0;
-		min-block-size: 32px;
+		height: 32px;
 
 		user-select: none;
 		display: flex;
 		align-items: center;
 		justify-content: flex-end;
-		position: fixed;
-		top: 4px;
-		left: 5px;
-		right: 5px;
-		z-index: 10;
-        margin-bottom: 352px;
+
+		position: relative;
+	}
+	#title-bar :global(img) {
+		user-select: none;
 	}
 
 	#title {
@@ -150,7 +124,7 @@
         margin-right: 8px;
     }
 
-    #title > * {
+    #title > *, #title img + span :global( > *) {
         display: inline-block;
         vertical-align: middle;
     }
@@ -172,9 +146,16 @@
         text-align: center;
 	}
     .titlebar-button:last-child {
-        border-top-right-radius: 0.5em;
+		transform: translateY(-1px);
+        border-top-right-radius: var(--window-border-radius);
     }
     .titlebar-button:last-child.hover {
         background: #D41325;
     }
+
+	:global(#version, #version *) {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 </style>

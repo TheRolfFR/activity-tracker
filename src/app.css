@@ -1,11 +1,12 @@
 body {
-	margin: 5px;
+	margin: 0;
 	position: relative;
 }
 html,
 body {
 	overflow: hidden;
     background: transparent;
+    height: 100vh;
 }
 ::-webkit-scrollbar {
 	width: 5px;
