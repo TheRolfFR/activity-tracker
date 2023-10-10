@@ -44,6 +44,9 @@
       "windows": {
         "certificateThumbprint": null,
         "digestAlgorithm": "sha256",
+        "nsis": {
+          "installMode": "both"
+        },
         "timestampUrl": ""
       }
     },
@@ -87,5 +90,6 @@
         "visible": false
       }
     ]
-  }
+  },
+  "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/tooling/cli/schema.json"
 }
