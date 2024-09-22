@@ -19,5 +19,9 @@
             "tauri.conf.json",
         ],
         "url": "https://raw.githubusercontent.com/tauri-apps/tauri/1.2/tooling/cli/schema.json"
-    }]
+    }],
+    "rust-analyzer.server.extraEnv": {
+        "CARGO_TARGET_DIR": "${workspaceFolder}/src-tauri/target/analyzer"
+    },
+    "rust-analyzer.cargo.targetDir": "${workspaceFolder}/src-tauri/target/analyzer"
 }

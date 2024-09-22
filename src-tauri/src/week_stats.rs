@@ -1,5 +1,4 @@
 use std::collections::hash_map::ValuesMut;
-use chrono::Duration;
 use ts_rs::TS;
 
 use crate::day_record::DayRecord;
@@ -13,11 +12,10 @@ pub struct WeekStats {
 
 impl<'a> From<ValuesMut<'a, u32, DayRecord>> for WeekStats {
     fn from(values: ValuesMut<u32,DayRecord>) -> Self {
-        let act_dur = Duration::minutes(5);
         let stats = values.into_iter().fold(WeekStats {
             done: 0
         }, |mut acc,cur| {
-            let stats = cur.get_stats(act_dur);
+            let stats = cur.get_stats();
             let secs = stats.duration.as_secs();
             acc.done += secs;
             acc

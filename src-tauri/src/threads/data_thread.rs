@@ -1,4 +1,4 @@
-use std::{sync::mpsc::{Receiver, Sender}};
+use std::sync::mpsc::{Receiver, Sender};
 
 use log::error;
 
@@ -31,7 +31,7 @@ pub fn data_thread(evt_rchan: Receiver<DataMessage>, evt_schan: Sender<Payload>)
                 }
             }
         }
-        
+
         if ui_throttle.update() {
             if let Err(err) = evt_schan.send(week_data.to_payload()) {
                 error!("Failed to send payload from data thread: {}", err);

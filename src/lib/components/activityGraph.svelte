@@ -6,7 +6,7 @@
     import { getHour, padTo2Digits } from "$lib/helpers/date";
 	import { onMount } from "svelte";
 
-    export let activities: ActivitySeries<Measure<number>>;
+    export let activities: ActivitySeries<Measure>;
     export let activity_stats: DayActivityStat[];
 
     interface DateActivity {
@@ -90,7 +90,7 @@
     $: {
         let min = Infinity;
         let max = 0;
-        let activities_per_hour: Record<number, Measure<number>[]> = {};
+        let activities_per_hour: Record<number, Measure[]> = {};
         
         activities.points.forEach(p => {
             let d_h = new Date(p.date *1000).getHours();
@@ -125,7 +125,6 @@
         });
     }
     $: hours = Object.keys(activity_props);
-    console.log(hours)
 
     function cssStringify(obj: {[key: string]: string}) {
         return Object.keys(obj).map(k => `${k}: ${obj[k]}`).join(';')
@@ -196,7 +195,7 @@
     .activity-group {
         position: relative;
         gap: 2px;
-        justify-items: flex-start;
+        justify-content: flex-start;
     }
     .activity {
         width: 4px;

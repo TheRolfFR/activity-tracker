@@ -1,9 +1,9 @@
 <script lang="ts">
+    import { createEventDispatcher } from 'svelte';
+
     import type { ActivitySeries } from "$bindings/ActivitySeries";
     import type { Measure } from "$bindings/Measure";
     import type { DayStats } from "$bindings/DayStats";
-
-    import { createEventDispatcher } from 'svelte';
 
 	import Graph from "$components/graph.svelte";
 	import Stat from "$components/stat.svelte";
@@ -16,13 +16,8 @@
 
     export let adjusted: number = 0;
     export let notadjusted: boolean = false;
-	const dispatch = createEventDispatcher();
-    function openDialog() {
-        if(!notadjusted)
-            dispatch('adjust');
-    }
 
-    let day_activity: ActivitySeries<Measure<number>> = {
+    let day_activity: ActivitySeries<Measure> = {
         labels: {
             x: "act",
             y: "amount"
@@ -35,8 +30,8 @@
             activity.click_series.points.sort((a, b) => a.date - b.date);
             activity.input_series.points.sort((a, b) => a.date - b.date);
 
-            let series_obj: Record<string, Measure<number>> = {};
-            const acts: ActivitySeries<Measure<number>>[] = [activity.click_series, activity.input_series];
+            let series_obj: Record<string, Measure> = {};
+            const acts: ActivitySeries<Measure>[] = [activity.click_series, activity.input_series];
 
             acts.forEach(act => {
                 act.points.forEach(measure => {
@@ -59,13 +54,35 @@
 
     let visible: boolean = false;
 
-    $: adjusted_time = [Math.floor(adjusted/60), Math.round(adjusted%60)] as [number, number];
     $: stats_time = [Math.floor(stats/60), Math.round(stats%60)] as [number, number];
+
+    let day_diff = 0;
+    $: {
+        day_diff = 0;
+        if(today_stats.activities.length > 0) {
+            const day_first = today_stats.activities[0].from;
+            const day_last = today_stats.activities[today_stats.activities.length - 1].to;
+            day_diff = day_last - day_first;
+        }
+        day_diff = day_diff/60;
+    };
+    $: day_diff_time = [Math.floor(day_diff/60), Math.round(day_diff%60)] as [number, number];
+
+	const dispatch = createEventDispatcher();
+    function openDialog() {
+        if(!notadjusted)
+            dispatch('adjust');
+    }
+
+    const adjusted_absolute = Math.abs(adjusted);
+    const adjusted_time = [Math.floor(adjusted_absolute/60), Math.round(adjusted_absolute%60)] as [number, number];
+    const adjusted_sign = adjusted >= 0 ? "+" : "-";
+    const adjusted_text = `${adjusted_sign}${adjusted_time.map((v) => v < 10 ? String('0' + v) : String(v)).join('h')+'m'}`;
 </script>
 
 <div id="day">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div id="day-graph" on:click={() => visible = !visible}>
+    <div id="day-graph" role="button" tabindex="0" aria-roledescription="Switch to between graphs" on:click={() => visible = !visible}>
         <div style="display: {visible ? 'block' : 'none'};">
             <Graph title="Day activity" data={data} width={343} type="line" color="#39d353" />
         </div>
@@ -73,11 +90,13 @@
             <ActivityGraph activity_stats={today_stats.activities} activities={data} />
         </div>
     </div><div>
-        <Stat title='Stats' value={stats_time} />
         <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div on:click={openDialog}>
-            <Stat title='Adjusted' value={adjusted_time} />
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div class="pointer" on:click={openDialog}>
+            <Stat title='Stats' value={stats_time} detail={adjusted_text} />
         </div>
+        <hr>
+        <Stat title="Day duration" value={day_diff_time} />
     </div>
 </div>
 

@@ -1,18 +1,22 @@
 use std::time::Duration;
 
-use chrono::{DateTime, Utc, serde::{ts_seconds, ts_seconds_option}};
+use chrono::{serde::ts_seconds, DateTime, Utc};
+use serde::{Serialize, Deserialize};
 use ts_rs::TS;
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct ActivityLabels {
     pub x: String,
     pub y: String,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, TS)]
-#[ts(export)]
-pub struct ActivitySeries<T: serde::Serialize + TS> {
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ActivitySeries<T>
+where
+    T: Serialize + TS,
+{
     pub points: Vec<T>,
     pub labels: ActivityLabels
 }
@@ -23,16 +27,19 @@ pub type ClickMeasure = Measure<u32>;
 pub type InputMeasure = Measure<u32>;
 pub type AdjustedType = i32;
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, TS)]
-#[ts(export)]
-pub struct Measure<T: serde::Serialize + Default + TS> {
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, concrete(T = u32))]
+pub struct Measure<T>
+where
+    T: Serialize + Default + TS,
+{
     pub count: T,
     #[serde(with = "ts_seconds")]
     #[ts(type = "number")]
-    pub date: MeasureDate
+    pub date: DateTime<Utc>
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Activity {
     pub clicks_per_minute: f64,
     pub click_series: ActivitySeries<ClickMeasure>,
@@ -45,13 +52,11 @@ pub struct Activity {
 
 pub const ONE_MINUTE: Duration = Duration::from_secs(60);
 pub const ONE_SECOND: Duration = Duration::from_secs(1);
+pub const FIVE_MINUTES: chrono::Duration = chrono::Duration::minutes(5);
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, TS)]
-#[ts(export)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ActivityPeriod {
-    #[serde(with = "ts_seconds")]
     pub start: DateTime<Utc>,
-    #[serde(with = "ts_seconds_option")]
     pub end: Option<DateTime<Utc>>,
     pub level: Activity
 }

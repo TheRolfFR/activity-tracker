@@ -1,4 +1,4 @@
-import { DayPayload } from './../../src-tauri/bindings/DayPayload';
+import type { DayPayload } from './../../src-tauri/bindings/DayPayload';
 import type { DayStats } from '$bindings/DayStats';
 import type { WeekStats } from '$bindings/WeekStats';
 import type { ActivitySeries } from "$bindings/ActivitySeries";
@@ -6,10 +6,16 @@ import type { Measure } from "$bindings/Measure";
 
 export interface Activity {
     clicks_per_minute: number,
-    click_series: ActivitySeries<Measure<number>>,
+    click_series: ActivitySeries<Measure>,
     inputs_per_minute: number,
-    input_series: ActivitySeries<Measure<number>>,
+    input_series: ActivitySeries<Measure>,
     adjusted: number
+}
+
+export interface ActivityPeriod {
+    start: number,
+    end?: number,
+    level: Activity
 }
 
 export interface ActDur {

@@ -24,15 +24,19 @@ impl DayRecordFile {
 
         if let Some(mut f) = file {
             f.read_to_string(&mut buff).unwrap();
-            if let Ok(val) = serde_json::from_str::<DayRecord>(&buff) {
-                if Utc::now().signed_duration_since(val.date).num_hours() >= 6*24 {
-                    DayRecord::new()
-                } else {
-                    val
+            match serde_json::from_str::<DayRecord>(&buff) {
+                Ok(val) => {
+                    if Utc::now().signed_duration_since(val.date).num_hours() >= 6*24 {
+                        DayRecord::new()
+                    } else {
+                        val
+                    }
+                },
+                Err(err) => {
+                    eprintln!("{}", &buff);
+                    eprintln!("{err}");
+                    panic!("Panicked while loading {day} activity");
                 }
-            } else {
-                dbg!(&buff);
-                panic!("Panicked while loading {day} activity");
             }
         } else {
             DayRecord::new()

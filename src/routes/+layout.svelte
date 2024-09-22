@@ -3,6 +3,7 @@
 	import '../app.css';
 
 	import type { WebviewWindow } from '@tauri-apps/api/window';
+	import type { Event as TauriEvent } from "@tauri-apps/api/event";
 	import { TextBlock } from 'fluent-svelte';
     import Favicon from '$lib/assets/favicon.png';
 	import Close from '$lib/assets/close.svg';
@@ -12,11 +13,19 @@
 
 	import { onMount } from 'svelte';
 	import { invoke } from '@tauri-apps/api/tauri';
+	import type { Payload } from '$src/lib/data';
 
 	let appWindow: WebviewWindow;
+	let version: string = "";
 	onMount(async () => {
 		appWindow = (await import('@tauri-apps/api/window')).appWindow;
-	});
+
+		const { listen } = await import("@tauri-apps/api/event")
+
+        listen('activity', (event: TauriEvent<Payload>) => {
+            version = event.payload.version;
+        })
+    });
 
     let closeFocus: boolean = false;
 
@@ -36,16 +45,19 @@
 
 <div id="title-bar" data-tauri-drag-region>
 	<div id="title" data-tauri-drag-region>
-        <img height="14" src={Favicon} alt="A" on:click={openAlt} on:keypress={() => {}}/><span>
-            <TextBlock data-tauri-drag-region variant="bodyStrong" data:title="Activity tracker" title="" id="window-title">Activity tracker</TextBlock>
-			<TextBlock variant="caption" id="version" data-tauri-drag-region style="opacity: 0.7"></TextBlock>
-        </span>
+		<button id="icon" on:click={openAlt} on:keypress={() => {}}>
+			<img height="14" src={Favicon} alt="A" />
+		</button>
+		<span>
+			<TextBlock data-tauri-drag-region variant="bodyStrong" id="window-title">Activity tracker</TextBlock>
+			<TextBlock variant="caption" id="version" data-tauri-drag-region style="opacity: 0.7">{version}</TextBlock>
+		</span>
 	</div>
 	<div>
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
-		<div class="titlebar-button" id="titlebar-close" on:click={handleClose} on:mouseenter={() => closeFocus = true} on:mouseleave={() => closeFocus = false} class:hover={closeFocus}>
+		<button class="titlebar-button" id="titlebar-close" on:click={handleClose} on:mouseenter={() => closeFocus = true} on:mouseleave={() => closeFocus = false} class:hover={closeFocus}>
 			<img src={Close} alt="close" />
-		</div>
+		</button>
 	</div>
 </div>
 
@@ -54,6 +66,11 @@
 </main>
 
 <style>
+	button {
+		border: 0px none;
+		background: transparent;
+		padding: 0;
+	}
 	:global(*) {
 		-webkit-box-sizing: border-box;
 		-moz-box-sizing: border-box;
@@ -76,7 +93,7 @@
 	:global(::selection) {
 		background-color: transparent !important;
 	}
-	
+
     :global(.content-dialog-smoke) {
         border-radius: var(--window-border-radius);
         left: var(--window-offset);
@@ -102,7 +119,7 @@
 		padding-inline-start: 0;
 		border-top-left-radius: 0;
 		border-top-right-radius: 0;
-		height: 32px;
+		height: 30px;
 
 		user-select: none;
 		display: flex;
@@ -120,11 +137,13 @@
 		padding-left: 8px;
 	}
 
-    #title img {
+    #icon {
+		height: 14px;
+		width: 12.31px;
         margin-right: 8px;
     }
 
-    #title > *, #title img + span :global( > *) {
+    #title > *, span :global( > *) {
         display: inline-block;
         vertical-align: middle;
     }
@@ -133,7 +152,7 @@
 		opacity: 0 !important;
 		transition: opacity 0.2s ease;
 	}
-	#title img:hover :global(+ span #version) {
+	#title #icon:hover :global(+ span #version) {
 		opacity: inherit !important;
 	}
 

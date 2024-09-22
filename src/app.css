@@ -3,10 +3,19 @@ body {
 	position: relative;
 }
 html,
-body {
+body, body > div {
 	overflow: hidden;
     background: transparent;
     height: 100vh;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+body > div {
+    display: flex;
+    flex-direction: column;
 }
 ::-webkit-scrollbar {
 	width: 5px;

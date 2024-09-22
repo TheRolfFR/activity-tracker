@@ -42,7 +42,7 @@
         version: '',
         week_payload: []
     };
-    
+
     let activity: Activity;
     $: today_adjusted = activity ? activity.adjusted : 0;
     onMount(async () => {
@@ -53,7 +53,7 @@
             // @ts-ignore
             window.payload = payload;
             activity = payload.activity;
-            
+
             let versionElement = document.getElementById('version');
             if(!versionElement || versionElement.innerText.trim() !== '') return;
             versionElement.innerText = payload.version;
@@ -89,10 +89,10 @@
     <div id="top">
         <Day activity={activity} adjusted={today_adjusted} stats={payload.today} today_stats={payload.today_stats} on:adjust={openAdjustDialog} />
     </div>
-    
+
     <div id="bottom">
-        <Week data={payload.week_stats} on:openweek={openWeekWindow} />
-        
+        <Week data={payload.week_stats} on:openweek={openWeekWindow} week_payload={payload.week_payload} />
+
         <div class="twice">
             {#if activity}
             <div>

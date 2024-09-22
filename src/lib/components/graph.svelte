@@ -11,9 +11,9 @@
 	import { getHour } from '$lib/helpers/date';
 
     export let title: string;
-    export let data: ActivitySeries<Measure<number>>;
+    export let data: ActivitySeries<Measure>;
     export let color: string = '#117DBB';
-    export let avg: number | undefined = undefined; 
+    export let avg: number | undefined = undefined;
     export let width: number = 212; // default 150
     export let type: string = "bar";
 
@@ -46,7 +46,7 @@
         <LinkedChart
             dispatchEvents
             on:hover={ () => hovered = true }
-            on:blur={ () => hovered = false } 
+            on:blur={ () => hovered = false }
             {labels}
             {values}
             {type}
@@ -80,7 +80,7 @@
     .spacer {
         flex-grow: 1;
     }
-    
+
     #graph-part {
         border-radius: 4px;
         background: rgba(0,0,0,0.2);

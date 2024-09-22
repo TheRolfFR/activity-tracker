@@ -7,12 +7,11 @@
     export let openadjust: boolean;
 
     function submit() {
-        if(adjusttime[0] < 0 || adjusttime[0] > 23 || 
+        if(adjusttime[0] < 0 || adjusttime[0] > 23 ||
            adjusttime[1] < 0 || adjusttime[1] > 59) return;
-        
+
         const val = adjusttime[0]*60 + adjusttime[1];
-        console.log(val);
-        
+
         invoke('adjust', {
             val
         }).finally(() => {

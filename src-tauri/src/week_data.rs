@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use chrono::{Local, Datelike, Duration};
+use chrono::{Local, Datelike};
 use log::error;
 use ts_rs::TS;
 
@@ -14,13 +14,15 @@ pub struct WeekData {
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, TS)]
 #[ts(export)]
 pub struct DayPayload {
+    #[ts(type="Activity")]
     activity: Activity,
     stats: DayStats,
+    #[ts(type="number")]
     time: u64,
     adjusted: i32
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, TS)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Payload {
     activity: Activity,
     today: u32,
@@ -90,16 +92,16 @@ impl WeekData {
     }
 
     pub(crate) fn to_payload(&mut self) -> Payload {
-        let act_dur = Duration::minutes(5);
         let today = self.get_today();
         let act = today.get_activity();
 
-        let today_stats = today.get_stats(act_dur);
+        let today_stats = today.get_stats();
         let dur_secs = today_stats.duration.as_secs();
 
         let week_payload = self.days.iter().fold(HashMap::new(), |mut acc, (day, data)| {
-            let stats = data.get_stats(act_dur);
-            let time = stats.duration.as_secs();
+            let stats = data.get_stats();
+            let day_dur_secs = stats.duration.as_secs();
+            let time = u64::div_ceil(day_dur_secs, 60);
 
             let this_day = DayPayload {
                 activity: data.get_activity(),

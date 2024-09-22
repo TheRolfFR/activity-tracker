@@ -16,7 +16,6 @@
 
         listen('activity', (event: Event<Payload>) => {
             days_data = event.payload.week_payload;
-            console.log(days_data)
         });
 
         const window_title = document.getElementById('window-title');
@@ -45,16 +44,29 @@
 </div>
 
 <style>
-    #container > .item {
-        display: inline-block;
-        max-width:50%;
-        width: 100%;
+    #container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing);
     }
-    .content {
+    .item {
+        display: flex;
+        flex-direction: column;
+    }
+    .item .content {
+        flex-grow: 1;
         min-height: 120px;
     }
-    
+
+    .item.nocontent {
+        gap: var(--spacing);
+    }
+
     .item.nocontent .content {
-        padding-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0,0,0,0.15);
+        border-radius: 1rem;
     }
 </style>

@@ -18,7 +18,7 @@ use tauri::Manager;
 use tauri_plugin_window_state;
 use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 
-use window_vibrancy::{ apply_mica, apply_blur, apply_acrylic };
+use window_vibrancy;
 
 mod throttle;
 
@@ -34,7 +34,6 @@ mod data;
 mod week_data;
 mod week_stats;
 
-#[allow(dead_code)]
 #[tauri::command]
 fn open_week_window(app_handle: tauri::AppHandle) {
     let opened_window = app_handle.get_window("week_data");
@@ -50,9 +49,9 @@ fn open_week_window(app_handle: tauri::AppHandle) {
         Some(w) => w
     };
     window.show().unwrap();
+    window.set_focus().unwrap();
 }
 
-#[allow(dead_code)]
 #[tauri::command]
 fn adjust(val: i32, state: tauri::State<SyncSender<i32>>) {
     if let Err(err) = state.send(val) {
@@ -63,7 +62,6 @@ fn adjust(val: i32, state: tauri::State<SyncSender<i32>>) {
 #[allow(dead_code)]
 #[tauri::command]
 fn open_menu_handle(window: tauri::Window) {
-    println!("Coucou");
     if let Err(err) = window.menu_handle().show() {
         error!("Failed to open menu {err}");
     }
@@ -169,13 +167,11 @@ fn main() {
 
             #[cfg(target_os = "windows")]
             {
-                let all_windows = &app.windows();
-                for (_, win) in all_windows {
-                    apply_mica(&win, Some(true))
-                        .or_else(|_| apply_acrylic(&win, None))
-                        .or_else(|_| apply_blur(&win, None))
+                app.windows().values().for_each(|win| {
+                    window_vibrancy::apply_mica(win, Some(true))
+                        .or_else(|_| window_vibrancy::apply_acrylic(win, None))
                         .ok();
-                }
+                });
             }
 
             let ver = app.package_info().version.to_string();
