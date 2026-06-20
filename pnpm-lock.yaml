@@ -18,9 +18,6 @@ importers:
       '@tauri-apps/api':
         specifier: 1.6.0
         version: 1.6.0
-      '@tauri-controls/svelte':
-        specifier: 0.4.0
-        version: 0.4.0(clsx@2.1.1)(svelte@4.2.19)(tailwind-merge@1.14.0)
       days-of-week:
         specifier: 1.0.3
         version: 1.0.3(prop-types@15.8.1)(react-dom@16.14.0(react@16.14.0))(react@16.14.0)
@@ -499,13 +496,6 @@ packages:
     engines: {node: '>= 10'}
     hasBin: true
 
-  '@tauri-controls/svelte@0.4.0':
-    resolution: {integrity: sha512-5zSLCz/l90+mQt/6lDZHzbJdTOt4Qbe1Mv0DCzCnNcaDy0Bbl8gqSWDps6SrIF4oq1sZkJno0GFjwHnol/wKSw==}
-    peerDependencies:
-      clsx: ^2.0.0
-      svelte: ^4.1.2
-      tailwind-merge: ^1.14.0
-
   '@types/cookie@0.6.0':
     resolution: {integrity: sha512-4Kh9a6B2bQciAhf7FSuMRRkUWecJgJu9nPnx3yzpsfXX/c50REIqpHY4C82bXP90qrLtXtkDxTZosYO3UpOwlA==}
 
@@ -645,10 +635,6 @@ packages:
   chokidar@3.5.3:
     resolution: {integrity: sha512-Dr3sfKRP6oTcjf2JmUmFJfeVMvXBdegxB0iVQ5eb2V10uFJUCAS8OByZdVAyVb8xXNz3GjjTgj9kLWsZTqE6kw==}
     engines: {node: '>= 8.10.0'}
-
-  clsx@2.1.1:
-    resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
-    engines: {node: '>=6'}
 
   code-red@1.0.4:
     resolution: {integrity: sha512-7qJWqItLA8/VPVlKJlFXU+NBlo/qyfs39aJcuMT/2ere32ZqvF5OSxgdM5xOfJJ7O429gg2HM47y8v9P+9wrNw==}
@@ -1288,9 +1274,6 @@ packages:
   tabbable@5.3.3:
     resolution: {integrity: sha512-QD9qKY3StfbZqWOPLp0++pOrAVb/HbUi5xCc8cUo4XjP19808oaMiDzn0leBY5mCespIBM0CIZePzZjgzR83kA==}
 
-  tailwind-merge@1.14.0:
-    resolution: {integrity: sha512-3mFKyCo/MBcgyOTlrY8T7odzZFx+w+qKSMAmdFzRvqBfLlSigU6TZnlFHK0lkMwj9Bj8OYU+9yW9lmGuS0QEnQ==}
-
   text-table@0.2.0:
     resolution: {integrity: sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==}
 
@@ -1682,12 +1665,6 @@ snapshots:
       '@tauri-apps/cli-win32-ia32-msvc': 1.6.2
       '@tauri-apps/cli-win32-x64-msvc': 1.6.2
 
-  '@tauri-controls/svelte@0.4.0(clsx@2.1.1)(svelte@4.2.19)(tailwind-merge@1.14.0)':
-    dependencies:
-      clsx: 2.1.1
-      svelte: 4.2.19
-      tailwind-merge: 1.14.0
-
   '@types/cookie@0.6.0': {}
 
   '@types/estree@1.0.5': {}
@@ -1852,8 +1829,6 @@ snapshots:
       readdirp: 3.6.0
     optionalDependencies:
       fsevents: 2.3.2
-
-  clsx@2.1.1: {}
 
   code-red@1.0.4:
     dependencies:
@@ -2468,8 +2443,6 @@ snapshots:
       periscopic: 3.1.0
 
   tabbable@5.3.3: {}
-
-  tailwind-merge@1.14.0: {}
 
   text-table@0.2.0: {}
 

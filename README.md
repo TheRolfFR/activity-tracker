@@ -31,12 +31,12 @@ Prepare your environment: follow the guide from https://tauri.app/v1/guides/gett
 Install JS and Rust dependencies
 
 ```
-pnpm install && cd src-tauri && cargo build
+pnpm install && pnpm tauri build
 ```
 
 Start dev command from root project
 
 ```
-cargo tauri dev
+pnpm tauri dev
 ```
 depends on the package manager used to install tauri CLI.
