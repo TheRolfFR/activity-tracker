@@ -90,10 +90,21 @@ class _MyHomePageState extends State<MyHomePage> {
                 Row(
                   spacing: 10,
                   children: [
-                    Image.asset("images/icon.png", width: 24,),
-                    Text("Activity\ntracker", style: TextStyle(fontSize: 14, fontWeight: ui.FontWeight.bold)),
+                    Image.asset("images/icon.png", width: 24),
+                    Text(
+                      "Activity\ntracker",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: ui.FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
+                _dayStat("Monday", "7h32"),
+                _dayStat("Tuesday", "8h15"),
+                _dayStat("Wednesday", "7h32"),
+                _dayStat("Thursday", "8h15"),
+                _dayStat("Friday", "7h32"),
               ],
             ),
           ),
@@ -127,4 +138,34 @@ class WindowButtons extends StatelessWidget {
         return const SizedBox.shrink();
     }
   }
+}
+
+Container _dayStat(String title, String duration) {
+  return Container(
+    child: Column(
+      children: [
+        Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+        ),
+
+        DecoratedBox(
+            decoration: BoxDecoration(
+                color: Color.fromARGB((4.19/100*255).round(), 255, 255, 255),
+                borderRadius: BorderRadius.circular(8),
+            ),
+            child: SizedBox(
+                width: 75,
+                child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 10),
+                    child: Center(child: Text(duration, style: const TextStyle(
+                    fontWeight:  FontWeight.bold,
+                    fontSize: 24,
+                    height: 1.0
+                )))),
+            )
+        ),
+      ],
+    )
+  );
 }
