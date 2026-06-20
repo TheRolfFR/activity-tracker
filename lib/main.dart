@@ -7,7 +7,19 @@ import 'dart:ui' as ui;
 import 'src/bindings/bindings.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await initializeRust(assignRustSignal);
+
+  await windowManager.ensureInitialized();
+
+  const options = WindowOptions(titleBarStyle: TitleBarStyle.hidden);
+
+  windowManager.waitUntilReadyToShow(options, () async {
+    await windowManager.setAsFrameless();
+    await windowManager.show();
+    await windowManager.focus();
+  });
+
   runApp(const MyApp());
 }
 
@@ -21,7 +33,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: FluentThemeData(
         brightness: Brightness.dark,
-        accentColor: Colors.blue,
+        accentColor: Colors.orange,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
@@ -47,19 +59,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -79,10 +78,26 @@ class _MyHomePageState extends State<MyHomePage> {
           end: Alignment.bottomRight,
         ),
       ),
-      child: Column(
+      child: Row(
+        // Left header divider
         children: [
-          Column(children: [Text("Activity\ntracker")]),
-          Column(children: [WindowButtons()]),
+          Container(
+            // column
+            decoration: const BoxDecoration(color: Colors.black),
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children: [
+                Row(
+                  spacing: 10,
+                  children: [
+                    Image.asset("images/icon.png", width: 24,),
+                    Text("Activity\ntracker", style: TextStyle(fontSize: 14, fontWeight: ui.FontWeight.bold)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          DragToMoveArea(child: Column(children: [WindowButtons()])),
         ],
       ),
     );
