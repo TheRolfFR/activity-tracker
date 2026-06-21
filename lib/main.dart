@@ -12,7 +12,11 @@ Future<void> main() async {
 
   await windowManager.ensureInitialized();
 
-  const options = WindowOptions(titleBarStyle: TitleBarStyle.hidden);
+  const options = WindowOptions(
+    titleBarStyle: TitleBarStyle.hidden,
+    size: Size(677, 529),
+    alwaysOnTop: true
+  );
 
   windowManager.waitUntilReadyToShow(options, () async {
     await windowManager.setAsFrameless();
@@ -61,6 +65,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
+    var typography = FluentTheme.of(context).typography;
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -108,7 +113,35 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             ),
           ),
-          DragToMoveArea(child: Column(children: [WindowButtons()])),
+          Expanded(
+            // right part
+            child: Column(
+              children: [
+                // top draggable bar
+                Container(
+                  width: double.infinity,
+                  height: 32,
+                  child: DragToMoveArea(
+                    child: Align(
+                      alignment: Alignment.topRight,
+                      child: WindowButtons(),
+                    )
+                  ),
+                ),
+                // main content padding
+                Padding(
+                  padding: EdgeInsetsGeometry.symmetric(horizontal: 20),
+                  // Current day and time done
+                  child: Row(
+                    children: [
+                      Expanded(child: Text("Friday, September 13th", style: typography.titleLarge?.merge(TextStyle(fontSize: 24)))),
+                      Text("7h32", style: typography.caption?.merge(TextStyle(fontSize: 24)))
+                    ],
+                  )
+                )
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -150,22 +183,28 @@ Container _dayStat(String title, String duration) {
         ),
 
         DecoratedBox(
-            decoration: BoxDecoration(
-                color: Color.fromARGB((4.19/100*255).round(), 255, 255, 255),
-                borderRadius: BorderRadius.circular(8),
-            ),
-            child: SizedBox(
-                width: 75,
-                child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 10),
-                    child: Center(child: Text(duration, style: const TextStyle(
-                    fontWeight:  FontWeight.bold,
+          decoration: BoxDecoration(
+            color: Color.fromARGB((4.19 / 100 * 255).round(), 255, 255, 255),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: SizedBox(
+            width: 75,
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              child: Center(
+                child: Text(
+                  duration,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
                     fontSize: 24,
-                    height: 1.0
-                )))),
-            )
+                    height: 1.0,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ],
-    )
+    ),
   );
 }
