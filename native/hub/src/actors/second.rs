@@ -27,8 +27,8 @@ impl SecondActor {
             member: true,
             nested: SmallBool(true),
         };
-        if let Ok(response) = first_addr.send(big_bool).await {
-            debug_print!("{}", response);
-        }
+        // if let Ok(response) = first_addr.send(big_bool).await {
+        //     debug_print!("{}", response);
+        // }
     }
 }

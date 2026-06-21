@@ -15,7 +15,7 @@ Future<void> main() async {
   const options = WindowOptions(
     titleBarStyle: TitleBarStyle.hidden,
     size: Size(677, 529),
-    alwaysOnTop: true
+    alwaysOnTop: true,
   );
 
   windowManager.waitUntilReadyToShow(options, () async {
@@ -89,27 +89,54 @@ class _MyHomePageState extends State<MyHomePage> {
           Container(
             // column
             decoration: const BoxDecoration(color: Colors.black),
+            width: 107,
             padding: const EdgeInsets.all(12),
             child: Column(
+              spacing: 20,
               children: [
                 Row(
-                  spacing: 10,
+                  spacing: 9,
                   children: [
                     Image.asset("images/icon.png", width: 24),
                     Text(
                       "Activity\ntracker",
                       style: TextStyle(
                         fontSize: 14,
-                        fontWeight: ui.FontWeight.bold,
+                        fontWeight: ui.FontWeight.w600,
+                        height: 1.2,
                       ),
                     ),
                   ],
                 ),
-                _dayStat("Monday", "7h32"),
-                _dayStat("Tuesday", "8h15"),
-                _dayStat("Wednesday", "7h32"),
-                _dayStat("Thursday", "8h15"),
-                _dayStat("Friday", "7h32"),
+                Expanded(
+                  child: Column(
+                    spacing: 9,
+                    children: [
+                      _dayStat("Monday", "7h32"),
+                      _dayStat("Tuesday", "8h15"),
+                      _dayStat("Wednesday", "7h32"),
+                      _dayStat("Thursday", "8h15"),
+                      _dayStat("Friday", "7h32"),
+                    ],
+                  ),
+                ),
+                Column(
+                  spacing: 10,
+                  children: [
+                    _dayStat("Week", "37h46"),
+                    SizedBox(
+                      height: 21,
+                      child: FilledButton(
+                        // style: ButtonStyle(backgroundColor: 0xFF2D2D2),
+                        child: Text(
+                          "Week stats",
+                          style: TextStyle(fontSize: 12, height: 1.2),
+                        ),
+                        onPressed: () => debugPrint('pressed button'),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -125,7 +152,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Align(
                       alignment: Alignment.topRight,
                       child: WindowButtons(),
-                    )
+                    ),
                   ),
                 ),
                 // main content padding
@@ -134,11 +161,23 @@ class _MyHomePageState extends State<MyHomePage> {
                   // Current day and time done
                   child: Row(
                     children: [
-                      Expanded(child: Text("Friday, September 13th", style: typography.titleLarge?.merge(TextStyle(fontSize: 24)))),
-                      Text("7h32", style: typography.caption?.merge(TextStyle(fontSize: 24)))
+                      Expanded(
+                        child: Text(
+                          "Friday, September 13th",
+                          style: typography.titleLarge?.merge(
+                            TextStyle(fontSize: 24),
+                          ),
+                        ),
+                      ),
+                      Text(
+                        "7h32",
+                        style: typography.caption?.merge(
+                          TextStyle(fontSize: 24),
+                        ),
+                      ),
                     ],
-                  )
-                )
+                  ),
+                ),
               ],
             ),
           ),
@@ -176,29 +215,33 @@ class WindowButtons extends StatelessWidget {
 Container _dayStat(String title, String duration) {
   return Container(
     child: Column(
+      spacing: 6,
       children: [
         Text(
           title,
-          style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+          style: const TextStyle(
+            color: Color(0xFFc6c6c6),
+            fontWeight: FontWeight.w500,
+            fontSize: 11,
+            height: 1.2,
+          ),
         ),
 
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: Color.fromARGB((4.19 / 100 * 255).round(), 255, 255, 255),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: SizedBox(
-            width: 75,
-            child: Container(
-              margin: const EdgeInsets.symmetric(vertical: 10),
-              child: Center(
-                child: Text(
-                  duration,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24,
-                    height: 1.0,
-                  ),
+        SizedBox(
+          width: 82,
+          height: 37,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: Color.fromARGB((4.19 / 100 * 255).round(), 255, 255, 255),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Center(
+              child: Text(
+                duration,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                  height: 1.2,
                 ),
               ),
             ),

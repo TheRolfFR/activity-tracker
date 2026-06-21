@@ -65,8 +65,8 @@ impl FirstActor {
         let mut time_interval = interval(Duration::from_secs(3));
         let text = "From an owned task".to_owned();
         loop {
-            time_interval.tick().await;
-            let _ = self_addr.notify(SmallText { text: text.clone() }).await;
+            // time_interval.tick().await;
+            // let _ = self_addr.notify(SmallText { text: text.clone() }).await;
         }
     }
 }
