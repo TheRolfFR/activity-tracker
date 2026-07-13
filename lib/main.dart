@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:activity_tracker_v2/my_window_caption.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:rinf/rinf.dart';
+import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 import 'dart:ui' as ui;
 
@@ -13,10 +16,24 @@ Future<void> main() async {
 
   await windowManager.ensureInitialized();
 
+  String path = Platform.isWindows
+      ? 'windows/runner/resources/app_icon.ico'
+      : 'images/icon.png';
+  await trayManager.setIcon(path);
+
+  Menu menu = Menu(
+    items: [
+      MenuItem(key: 'quit', label: 'Quit'),
+      MenuItem.separator(),
+      MenuItem(key: 'week_data', label: 'Week data'),
+      MenuItem(key: 'hide', label: 'Hide'),
+    ],
+  );
+  await trayManager.setContextMenu(menu);
+
   const options = WindowOptions(
     titleBarStyle: TitleBarStyle.hidden,
     size: Size(677, 529),
-    skipTaskbar: true,
     alwaysOnTop: true,
   );
 
@@ -64,7 +81,46 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with TrayListener {
+  @override
+  void initState() {
+    trayManager.addListener(this);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    trayManager.removeListener(this);
+    super.dispose();
+  }
+
+  @override
+  void onTrayIconMouseDown() {
+    () async {
+      if (await windowManager.isMinimized()) {
+        windowManager.show();
+      } else {
+        windowManager.minimize();
+      }
+    }.call();
+  }
+
+  @override
+  void onTrayIconRightMouseDown() {
+    trayManager.popUpContextMenu();
+  }
+
+  @override
+  void onTrayMenuItemClick(MenuItem menuItem) {
+    if (menuItem.key == 'quit') {
+      windowManager.close();
+    } else if (menuItem.key == 'week_data') {
+      debugPrint("week_data");
+    } else if (menuItem.key == 'hide') {
+      windowManager.minimize();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     var typography = FluentTheme.of(context).typography;
