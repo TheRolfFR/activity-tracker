@@ -1,3 +1,4 @@
+import 'package:activity_tracker_v2/my_window_caption.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:rinf/rinf.dart';
@@ -15,6 +16,7 @@ Future<void> main() async {
   const options = WindowOptions(
     titleBarStyle: TitleBarStyle.hidden,
     size: Size(677, 529),
+    skipTaskbar: true,
     alwaysOnTop: true,
   );
 
@@ -201,7 +203,7 @@ class WindowButtons extends StatelessWidget {
         return SizedBox(
           width: 138,
           height: 50,
-          child: WindowCaption(
+          child: MyWindowCaption(
             brightness: theme.brightness,
             backgroundColor: Colors.transparent,
           ),

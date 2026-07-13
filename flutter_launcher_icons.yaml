@@ -1,0 +1,6 @@
+# flutter pub run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: "images/icon.png"  # Path to your source image
+  ios: false
+  windows:
+    generate: true
