@@ -11,6 +11,8 @@ use iced_fluent_theme::{
     font::{self}
 };
 
+use tray_icon::{TrayIconBuilder, menu::Menu};
+
 
 // Type alias to save specifying the theme every time
 pub type Element<'a, Message> = iced::Element<'a, Message, iced_fluent_theme::Theme>;
@@ -34,6 +36,7 @@ fn main() -> iced::Result {
 
 struct MyApp {
     windows: BTreeMap<window::Id, Window>,
+    tray_icon: tray_icon::TrayIcon
 }
 
 #[derive(Debug)]
@@ -53,13 +56,37 @@ enum Message {
     TitleChanged(window::Id, String),
 }
 
+fn load_icon(path: &std::path::Path) -> tray_icon::Icon {
+    let (icon_rgba, icon_width, icon_height) = {
+        let image = image::open(path)
+            .expect("Failed to open icon path")
+            .into_rgba8();
+        let (width, height) = image.dimensions();
+        let rgba = image.into_raw();
+        (rgba, width, height)
+    };
+    tray_icon::Icon::from_rgba(icon_rgba, icon_width, icon_height).expect("Failed to open icon")
+}
+
 impl MyApp {
     fn new() -> (Self, Task<Message>) {
         let (_, open) = window::open(window::Settings::default());
 
+        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/Images/icon.png");
+        let icon = load_icon(std::path::Path::new(path));
+
+        let tray_menu = Menu::new();
+        let tray_icon = TrayIconBuilder::new()
+            .with_menu(Box::new(tray_menu))
+            .with_tooltip("system-tray - tray icon library!")
+            .with_icon(icon)
+            .build()
+            .unwrap();
+
         (
             Self {
                 windows: BTreeMap::new(),
+                tray_icon,
             },
             open.map(Message::WindowOpened),
         )
