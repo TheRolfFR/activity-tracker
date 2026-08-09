@@ -11,8 +11,13 @@ use iced_fluent_theme::{
     font::{self}
 };
 
-use tray_icon::{TrayIconBuilder, menu::Menu};
+mod state;
+mod tray;
 
+use crate::tray::{tray_icon, tray_subscription};
+use crate::state::MainMessage;
+
+const ICON: &[u8] = include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/Images/icon.png"));
 
 // Type alias to save specifying the theme every time
 pub type Element<'a, Message> = iced::Element<'a, Message, iced_fluent_theme::Theme>;
@@ -25,8 +30,13 @@ fn main() -> iced::Result {
         ..Default::default()
     };
 
+            let _tray_icon = tray_icon("Activity tracker", ICON);
+
     iced::daemon(MyApp::new, MyApp::update, MyApp::view)
-        .subscription(MyApp::subscription)
+        .subscription(|state| Subscription::batch([
+            state.subscription(),
+            tray_subscription(),
+        ]))
         .settings(settings)
         .title(MyApp::title)
         .theme(MyApp::theme)
@@ -36,7 +46,6 @@ fn main() -> iced::Result {
 
 struct MyApp {
     windows: BTreeMap<window::Id, Window>,
-    tray_icon: tray_icon::TrayIcon
 }
 
 #[derive(Debug)]
@@ -46,55 +55,21 @@ struct Window {
     current_scale: f32,
 }
 
-#[derive(Debug, Clone)]
-enum Message {
-    OpenWindow,
-    WindowOpened(window::Id),
-    WindowClosed(window::Id),
-    ScaleInputChanged(window::Id, String),
-    ScaleChanged(window::Id, String),
-    TitleChanged(window::Id, String),
-}
-
-fn load_icon(path: &std::path::Path) -> tray_icon::Icon {
-    let (icon_rgba, icon_width, icon_height) = {
-        let image = image::open(path)
-            .expect("Failed to open icon path")
-            .into_rgba8();
-        let (width, height) = image.dimensions();
-        let rgba = image.into_raw();
-        (rgba, width, height)
-    };
-    tray_icon::Icon::from_rgba(icon_rgba, icon_width, icon_height).expect("Failed to open icon")
-}
-
 impl MyApp {
-    fn new() -> (Self, Task<Message>) {
+    fn new() -> (Self, Task<MainMessage>) {
         let (_, open) = window::open(window::Settings::default());
-
-        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/Images/icon.png");
-        let icon = load_icon(std::path::Path::new(path));
-
-        let tray_menu = Menu::new();
-        let tray_icon = TrayIconBuilder::new()
-            .with_menu(Box::new(tray_menu))
-            .with_tooltip("system-tray - tray icon library!")
-            .with_icon(icon)
-            .build()
-            .unwrap();
 
         (
             Self {
                 windows: BTreeMap::new(),
-                tray_icon,
             },
-            open.map(Message::WindowOpened),
+            open.map(MainMessage::WindowOpened),
         )
     }
 
-    fn update(&mut self, message: Message) -> Task<Message> {
+    fn update(&mut self, message: MainMessage) -> Task<MainMessage> {
         match message {
-            Message::OpenWindow => {
+            MainMessage::OpenWindow => {
                 let Some(last_window) = self.windows.keys().last() else {
                     return Task::none();
                 };
@@ -113,9 +88,9 @@ impl MyApp {
 
                         open
                     })
-                    .map(Message::WindowOpened)
+                    .map(MainMessage::WindowOpened)
             }
-            Message::WindowOpened(id) => {
+            MainMessage::WindowOpened(id) => {
                 let window = Window::new(self.windows.len() + 1);
                 let focus_input = operation::focus(format!("input-{id}"));
 
@@ -123,7 +98,7 @@ impl MyApp {
 
                 focus_input
             }
-            Message::WindowClosed(id) => {
+            MainMessage::WindowClosed(id) => {
                 self.windows.remove(&id);
 
                 if self.windows.is_empty() {
@@ -132,14 +107,14 @@ impl MyApp {
                     Task::none()
                 }
             }
-            Message::ScaleInputChanged(id, scale) => {
+            MainMessage::ScaleInputChanged(id, scale) => {
                 if let Some(window) = self.windows.get_mut(&id) {
                     window.scale_input = scale;
                 }
 
                 Task::none()
             }
-            Message::ScaleChanged(id, scale) => {
+            MainMessage::ScaleChanged(id, scale) => {
                 if let Some(window) = self.windows.get_mut(&id) {
                     window.current_scale = scale
                         .parse()
@@ -149,17 +124,26 @@ impl MyApp {
 
                 Task::none()
             }
-            Message::TitleChanged(id, title) => {
+            MainMessage::TitleChanged(id, title) => {
                 if let Some(window) = self.windows.get_mut(&id) {
                     window.title = title;
                 }
 
                 Task::none()
+            },
+            MainMessage::TrayEvent(name) => {
+                match name.as_str() {
+                    "quit" => { dbg!("quit"); },
+                    "week_data" => { dbg!("week_data"); },
+                    "hide" => { dbg!("hide"); },
+                    _ => {}
+                };
+                Task::none()
             }
         }
     }
 
-    fn view(&self, window_id: window::Id) -> Element<'_, Message> {
+    fn view(&self, window_id: window::Id) -> Element<'_, MainMessage> {
         if let Some(window) = self.windows.get(&window_id) {
             center(window.view(window_id)).into()
         } else {
@@ -186,8 +170,8 @@ impl MyApp {
             .unwrap_or(1.0)
     }
 
-    fn subscription(&self) -> Subscription<Message> {
-        window::close_events().map(Message::WindowClosed)
+    fn subscription(&self) -> Subscription<MainMessage> {
+        window::close_events().map(MainMessage::WindowClosed)
     }
 }
 
@@ -200,22 +184,22 @@ impl Window {
         }
     }
 
-    fn view(&self, id: window::Id) -> Element<'_, Message> {
+    fn view(&self, id: window::Id) -> Element<'_, MainMessage> {
         let scale_input = column![
             text("Window scale factor:"),
             text_input("Window Scale", &self.scale_input)
-                .on_input(Message::ScaleInputChanged.with(id))
-                .on_submit(Message::ScaleChanged(id, self.scale_input.to_string()))
+                .on_input(MainMessage::ScaleInputChanged.with(id))
+                .on_submit(MainMessage::ScaleChanged(id, self.scale_input.to_string()))
         ];
 
         let title_input = column![
             text("Window title:"),
             text_input("Window Title", &self.title)
-                .on_input(Message::TitleChanged.with(id))
+                .on_input(MainMessage::TitleChanged.with(id))
                 .id(format!("input-{id}"))
         ];
 
-        let new_window_button = button(text("New Window")).on_press(Message::OpenWindow);
+        let new_window_button = button(text("New Window")).on_press(MainMessage::OpenWindow);
 
         let content = column![scale_input, title_input, new_window_button]
             .spacing(50)
