@@ -4,7 +4,7 @@ use iced::widget::{
     button, center, center_x, column, container, operation, scrollable, space, text, text_input,
 };
 use iced::window;
-use iced::{Center, Fill, Function, Subscription, Task, Vector};
+use iced::{Size, Center, Fill, Function, Subscription, Task, Vector};
 
 use iced_fluent_theme::{
     BrandVariants, Theme,
@@ -57,7 +57,14 @@ struct Window {
 
 impl MyApp {
     fn new() -> (Self, Task<MainMessage>) {
-        let (_, open) = window::open(window::Settings::default());
+        let (_, open) = window::open(window::Settings {
+            icon: Some(window::icon::from_file_data(ICON, Option::None).unwrap()),
+            resizable: false,
+            size: Size {width: 677.0, height: 529.0},
+            decorations: false,
+            transparent: true,
+            ..window::Settings::default()
+        });
 
         (
             Self {

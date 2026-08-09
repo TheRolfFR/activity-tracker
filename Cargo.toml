@@ -22,7 +22,7 @@ serde_with = "3.21.0"
 sorted-vec = "0.8.11"
 log = "0.4.33"
 simple-logging = "2.0.2"
-iced = { version = "0.14.0", features = ["tokio", "sipper"] }
+iced = { version = "0.14.0", features = ["tokio", "sipper", "image"] }
 iced-fluent-theme = "0.1.0"
 iced_aw = "0.14.1"
 tray-icon = "0.24.2"
