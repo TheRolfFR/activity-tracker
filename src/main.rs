@@ -1,92 +1,43 @@
 use iced::{
-    Font,
-    font::Family,
-    widget::{
-        Checkbox, checkbox,
-        checkbox::Icon,
-        column,
-        text::{LineHeight, Shaping},
-    },
+    widget::{slider, column, progress_bar, text, ProgressBar},
 };
 
 fn main() -> iced::Result {
-    iced::run( MyApp::update, MyApp::view)
+    iced::run(MyApp::update, MyApp::view)
 }
 
 #[derive(Debug, Clone)]
 enum Message {
-    DoNothing,
-    Update4(bool),
-    Update5(bool),
+    UpdateValue(u32),
 }
 
-#[derive(Default)]
 struct MyApp {
-    checkbox4: bool,
-    checkbox5: bool,
+    value: u32,
+}
+
+impl Default for MyApp {
+    fn default() -> Self {
+        Self {
+            value: 50
+        }
+    }
 }
 
 impl MyApp {
     fn update(&mut self, message: Message) {
         match message {
-            Message::DoNothing => {}
-            Message::Update4(b) => self.checkbox4 = b,
-            Message::Update5(b) => self.checkbox5 = b,
+            Message::UpdateValue(v) => self.value = v,
         }
     }
 
-    fn view(&self) -> iced::Element<Message> {
+    fn view(&self) -> iced::Element<'_, Message> {
         column![
-            Checkbox::new(false)
-              .label("Construct from struct"),
-            checkbox(false)
-              .label("Construct from function"),
-            checkbox(false)
-                .label("Enabled checkbox")
-              .on_toggle(|_| Message::DoNothing),
-            checkbox(self.checkbox4)
-                .label("Functional checkbox")
-              .on_toggle(|b| Message::Update4(b)),
-            checkbox(self.checkbox5)
-                .label("Shorter parameter")
-              .on_toggle(Message::Update5),
-            checkbox(false)
-                .label("Larger box")
-                .on_toggle(|_| Message::DoNothing)
-                .size(30),
-            checkbox(true)
-                .label("Different icon")
-                .on_toggle(|_| Message::DoNothing)
-                .icon(Icon {
-                    font: Font::DEFAULT,
-                    code_point: '*',
-                    size: None,
-                    line_height: LineHeight::default(),
-                    shaping: Shaping::default()
-                }),
-            checkbox(false)
-                .label("Different font")
-                .on_toggle(|_| Message::DoNothing)
-                .font(Font {
-                    family: Family::Fantasy,
-                    ..Font::DEFAULT
-                }),
-            checkbox(false)
-                .label("Larger text")
-                .on_toggle(|_| Message::DoNothing)
-                .text_size(24),
-            checkbox(false)
-                .label("Special character 😊")
-                .on_toggle(|_| Message::DoNothing)
-                .text_shaping(Shaping::Advanced),
-            checkbox(false)
-                .label("Space between box and text")
-                .on_toggle(|_| Message::DoNothing)
-                .spacing(30),
-            checkbox(false)
-                .label("Space between box and text")
-                .on_toggle(|_| Message::DoNothing)
-                .spacing(0),
+            text("Construct from struct"),
+            ProgressBar::new(0.0..=100.0, self.value as f32 + 20.),
+            text("Construct from function"),
+            progress_bar(0.0..=100.0, self.value as f32),
+            text(format!("Functional slider {}", self.value)),
+            slider(0..=100, self.value, Message::UpdateValue),
         ]
         .into()
     }
