@@ -1,8 +1,13 @@
-use iced::widget::{button, column, text, Column};
+use iced::widget::{button, row, text, Row};
 
-#[derive(Default)]
 struct Counter {
-    value: i64,
+    value: u8,
+}
+
+impl Default for Counter {
+  fn default() -> Self {
+      Self { value: 255 }
+  }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -15,10 +20,10 @@ impl Counter {
     fn update(&mut self, message: Message) {
         match message {
             Message::Increment => {
-                self.value += 1;
+                self.value = self.value.checked_add(1).unwrap_or(self.value);
             }
             Message::Decrement => {
-                self.value -= 1;
+                self.value = self.value.checked_sub(1).unwrap_or(self.value);
             }
         }
     }
@@ -36,8 +41,8 @@ fn it_counts_properly() {
 }
 
 impl Counter {
-    fn view(&self) -> Column<Message> {
-        column![
+    fn view(&self) -> Row<Message> {
+        row![
             button("+").on_press(Message::Increment),
             text(self.value),
             button("-").on_press(Message::Decrement),
