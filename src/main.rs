@@ -1,12 +1,12 @@
+use std::default::Default;
+
 use iced::{
-    ContentFit,
-    widget::{Svg, column, svg, svg::Handle, text},
+    Color, Degrees, Gradient, Length, Radians, alignment::{Horizontal, Vertical}, gradient::{ColorStop, Linear}, widget::{Container, column, container},
 };
 
 fn main() -> iced::Result {
-    iced::run(MyApp::update, MyApp::view)
+    iced::run( MyApp::update, MyApp::view)
 }
-
 
 #[derive(Debug, Clone)]
 enum Message {}
@@ -19,21 +19,28 @@ impl MyApp {
 
     fn view(&self) -> iced::Element<Message> {
         column![
-            text("Construct from struct"),
-            Svg::from_path("Images/ferris.svg")
-                .width(100)
-                .height(100),
-            text("Construct from function"),
-            svg(Handle::from_path("Images/ferris.svg"))
-                .width(100)
-                .height(100),
-            svg(Handle::from_path("Images/ferris.svg"))
-                .width(500),
-            text("Different content fit"),
-            Svg::from_path("Images/ferris.svg")
-                .content_fit(ContentFit::Cover)
-                .width(100)
-                .height(100),
+            Container::new("Construct from struct"),
+            container("Construct from function"),
+            container("With padding").padding(20),
+            container("Different alignment")
+                .width(Length::Fill)
+                .align_x(Horizontal::Center),
+            container("Different alignment for vertical axis")
+                .height(Length::Fill)
+                .align_y(Vertical::Center),
+            container("Center")
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .center_x(Length::Fill)
+                .center_y(Length::Fill).style(|_| {
+                    container::Style {
+                        background: Some(Gradient::Linear(Linear::new(Degrees(-35.)).add_stops(vec![
+                            ColorStop { offset: 0., color: Color::from_rgb8(0xff, 0xbc, 0x00) },
+                            ColorStop { offset: 1., color: Color::from_rgb8(0xff, 0x00, 0x58) },
+                        ])).scale_alpha(1.).into()),
+                        ..Default::default()
+                    }
+                }),
         ]
         .into()
     }
