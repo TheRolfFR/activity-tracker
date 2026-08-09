@@ -1,45 +1,53 @@
-use iced::{theme::Base, widget::{button, column, text}};
+use iced_fluent_theme::{
+    BrandVariants, Theme,
+    font::{self}
+};
+
+
+// Type alias to save specifying the theme every time
+pub type Element<'a, Message> = iced::Element<'a, Message, iced_fluent_theme::Theme>;
 
 fn main() -> iced::Result {
-    iced::application(MyApp::default, MyApp::update, MyApp::view)
+    let settings = iced::Settings {
+        fonts: font::load(),
+        antialiasing: true,
+        default_font: font::REGULAR,
+        ..Default::default()
+    };
+
+    iced::application(MyApp::new, MyApp::update, MyApp::view)
+        .settings(settings)
+        .title(MyApp::title)
         .theme(MyApp::theme)
         .run()
 }
 
-#[derive(Debug, Clone)]
-enum Message {
-    ToggleTheme,
+struct MyApp {
 }
 
-#[derive(Default)]
-struct MyApp {
-    mode: iced::theme::Mode,
+#[derive(Clone, Debug)]
+enum Message {
 }
 
 impl MyApp {
-    fn update(&mut self, _message: Message) {
-        match _message {
-            Message::ToggleTheme => {
-                self.mode = match self.mode {
-                    iced::theme::Mode::Dark => iced::theme::Mode::Light,
-                    iced::theme::Mode::Light => iced::theme::Mode::Dark,
-                    _ => iced::theme::Mode::Dark,
-                };
-            }
+    fn new() -> Self {
+
+        Self {
         }
     }
 
-    fn view(&self) -> iced::Element<'_, Message> {
-        column![
-            button("Toggle Theme").on_press(Message::ToggleTheme),
-            text("Hello, world!"),
-            text(format!("Current mode: {:?}", self.theme().mode())),
-        ]
-        .into()
+    fn update(&mut self, _message: Message) {
     }
 
-    fn theme(&self) -> iced::Theme {
-        dbg!(&self.mode);
-        iced::Theme::default(self.mode)
+    fn view(&self) -> Element<'_, Message> {
+        "content".into()
+    }
+
+    fn title(&self) -> String {
+        String::from("Iced Fluent Theme Gallery")
+    }
+
+    fn theme(&self) -> Theme {
+        Theme::light(Some(BrandVariants::DEFAULT))
     }
 }
