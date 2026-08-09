@@ -8,5 +8,4 @@ fn main() {
     let commit_date_output = Command::new("git").args(&["-c", "log.showSignature=false", "log", "-1", "--date=format:\"%Y.%m.%d\"", "--format=\"%ad\""]).output().unwrap();
     let commit_date = String::from_utf8(commit_date_output.stdout).unwrap().replace("\"", "");
     println!("cargo:rustc-env=GIT_DATE={}", commit_date);
-  tauri_build::build()
 }

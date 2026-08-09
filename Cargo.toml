@@ -1,0 +1,29 @@
+[package]
+name = "activity-tracker"
+version = "1.0.0"
+description = "An iced app to track your worktime"
+authors = ["you"]
+license = ""
+repository = ""
+edition = "2021"
+rust-version = "1.57"
+build = "build.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde_json = "1.0.151"
+rdev = "0.5.3"
+bounded-vec-deque = "0.1.1"
+serde = { version = "1.0.229", features = ["derive"] }
+chrono = { version = "0.4.45", features = ["serde"] }
+window-vibrancy = "0.8"
+serde_with = "3.21.0"
+sorted-vec = "0.8.11"
+log = "0.4.33"
+simple-logging = "2.0.2"
+iced = { version = "0.14.0"}
+
+[[bin]]
+name = "activity-tracker-app"
+path = "src/main.rs"
