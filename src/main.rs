@@ -1,7 +1,10 @@
-use iced::{Color, border::Radius, widget::{Rule, column, rule::{self, FillMode, horizontal as horizontal_rule, vertical as vertical_rule}, text}};
+use iced::{
+    ContentFit,
+    widget::{Image, column, image, text},
+};
 
 fn main() -> iced::Result {
-    iced::run( MyApp::update, MyApp::view)
+    iced::run(MyApp::update, MyApp::view)
 }
 
 #[derive(Debug, Clone)]
@@ -16,17 +19,13 @@ impl MyApp {
     fn view(&self) -> iced::Element<Message> {
         column![
             text("Construct from struct"),
+            Image::new("Images/icon.png").width(100).height(100),
             text("Construct from function"),
-            horizontal_rule(0),
-            text("Different space"),
-            horizontal_rule(5).style(|_| rule::Style {
-                radius: Radius::new(5),
-                snap: true,
-                fill_mode: FillMode::AsymmetricPadding(50, 20),
-                color: Color::from_rgb8(255, 0, 0)
-            }),
-            text("Vertical rule"),
-            vertical_rule(100),
+            image("Images/icon.png").width(100).height(100),
+            text("Different content fit"),
+            image("Images/activity-tracker.png")
+                .content_fit(ContentFit::Contain)
+                .width(500)
         ]
         .into()
     }
