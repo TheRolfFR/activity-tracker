@@ -1,11 +1,12 @@
 use iced::{
     ContentFit,
-    widget::{Image, column, image, text},
+    widget::{Svg, column, svg, svg::Handle, text},
 };
 
 fn main() -> iced::Result {
     iced::run(MyApp::update, MyApp::view)
 }
+
 
 #[derive(Debug, Clone)]
 enum Message {}
@@ -19,13 +20,20 @@ impl MyApp {
     fn view(&self) -> iced::Element<Message> {
         column![
             text("Construct from struct"),
-            Image::new("Images/icon.png").width(100).height(100),
+            Svg::from_path("Images/ferris.svg")
+                .width(100)
+                .height(100),
             text("Construct from function"),
-            image("Images/icon.png").width(100).height(100),
+            svg(Handle::from_path("Images/ferris.svg"))
+                .width(100)
+                .height(100),
+            svg(Handle::from_path("Images/ferris.svg"))
+                .width(500),
             text("Different content fit"),
-            image("Images/activity-tracker.png")
-                .content_fit(ContentFit::Contain)
-                .width(500)
+            Svg::from_path("Images/ferris.svg")
+                .content_fit(ContentFit::Cover)
+                .width(100)
+                .height(100),
         ]
         .into()
     }
