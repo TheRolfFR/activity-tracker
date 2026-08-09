@@ -1,47 +1,45 @@
-use std::default::Default;
-
-use iced::{
-    Color, Degrees, Gradient, Length, Radians, alignment::{Horizontal, Vertical}, gradient::{ColorStop, Linear}, widget::{Container, column, container},
-};
+use iced::{theme::Base, widget::{button, column, text}};
 
 fn main() -> iced::Result {
-    iced::run( MyApp::update, MyApp::view)
+    iced::application(MyApp::default, MyApp::update, MyApp::view)
+        .theme(MyApp::theme)
+        .run()
 }
 
 #[derive(Debug, Clone)]
-enum Message {}
+enum Message {
+    ToggleTheme,
+}
 
 #[derive(Default)]
-struct MyApp;
+struct MyApp {
+    mode: iced::theme::Mode,
+}
 
 impl MyApp {
-    fn update(&mut self, _message: Message) {}
+    fn update(&mut self, _message: Message) {
+        match _message {
+            Message::ToggleTheme => {
+                self.mode = match self.mode {
+                    iced::theme::Mode::Dark => iced::theme::Mode::Light,
+                    iced::theme::Mode::Light => iced::theme::Mode::Dark,
+                    _ => iced::theme::Mode::Dark,
+                };
+            }
+        }
+    }
 
-    fn view(&self) -> iced::Element<Message> {
+    fn view(&self) -> iced::Element<'_, Message> {
         column![
-            Container::new("Construct from struct"),
-            container("Construct from function"),
-            container("With padding").padding(20),
-            container("Different alignment")
-                .width(Length::Fill)
-                .align_x(Horizontal::Center),
-            container("Different alignment for vertical axis")
-                .height(Length::Fill)
-                .align_y(Vertical::Center),
-            container("Center")
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .center_x(Length::Fill)
-                .center_y(Length::Fill).style(|_| {
-                    container::Style {
-                        background: Some(Gradient::Linear(Linear::new(Degrees(-35.)).add_stops(vec![
-                            ColorStop { offset: 0., color: Color::from_rgb8(0xff, 0xbc, 0x00) },
-                            ColorStop { offset: 1., color: Color::from_rgb8(0xff, 0x00, 0x58) },
-                        ])).scale_alpha(1.).into()),
-                        ..Default::default()
-                    }
-                }),
+            button("Toggle Theme").on_press(Message::ToggleTheme),
+            text("Hello, world!"),
+            text(format!("Current mode: {:?}", self.theme().mode())),
         ]
         .into()
+    }
+
+    fn theme(&self) -> iced::Theme {
+        dbg!(&self.mode);
+        iced::Theme::default(self.mode)
     }
 }
