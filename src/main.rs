@@ -13,9 +13,11 @@ use iced_fluent_theme::{
 
 mod state;
 mod tray;
+mod window_controls;
 
 use crate::tray::{tray_icon, tray_subscription};
 use crate::state::MainMessage;
+use crate::window_controls::window_controls;
 
 const ICON: &[u8] = include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/Images/icon.png"));
 
@@ -74,6 +76,16 @@ impl MyApp {
         )
     }
 
+    fn remove_window(&mut self, id: window::Id) -> Task<MainMessage> {
+        self.windows.remove(&id);
+
+        if self.windows.is_empty() {
+            iced::exit()
+        } else {
+            Task::none()
+        }
+    }
+
     fn update(&mut self, message: MainMessage) -> Task<MainMessage> {
         match message {
             MainMessage::OpenWindow => {
@@ -106,13 +118,7 @@ impl MyApp {
                 focus_input
             }
             MainMessage::WindowClosed(id) => {
-                self.windows.remove(&id);
-
-                if self.windows.is_empty() {
-                    iced::exit()
-                } else {
-                    Task::none()
-                }
+                self.remove_window(id)
             }
             MainMessage::ScaleInputChanged(id, scale) => {
                 if let Some(window) = self.windows.get_mut(&id) {
@@ -146,7 +152,18 @@ impl MyApp {
                     _ => {}
                 };
                 Task::none()
+            },
+            MainMessage::WindowClose(id) => {
+                iced::window::close(id)
+                    .chain(self.remove_window(id))
             }
+            MainMessage::WindowMaximize(id) => {
+                iced::window::is_maximized(id)
+                    .then(move |is_maximized| iced::window::maximize(id, !is_maximized))
+            },
+            MainMessage::WindowMinimize(id) => {
+                iced::window::minimize(id, true)
+            },
         }
     }
 
@@ -208,7 +225,19 @@ impl Window {
 
         let new_window_button = button(text("New Window")).on_press(MainMessage::OpenWindow);
 
-        let content = column![scale_input, title_input, new_window_button]
+        let top_window_controls = window_controls(
+            true,
+            false,
+            false,
+            id
+        );
+
+        let content = column![
+            scale_input,
+            title_input,
+            new_window_button,
+            top_window_controls,
+        ]
             .spacing(50)
             .width(Fill)
             .align_x(Center)

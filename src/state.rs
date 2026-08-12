@@ -12,4 +12,9 @@ pub enum MainMessage {
 
     // Tray
     TrayEvent(String),
+
+    // Window controls
+    WindowMinimize(window::Id),
+    WindowMaximize(window::Id),
+    WindowClose(window::Id)
 }
