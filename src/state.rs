@@ -11,6 +11,7 @@ pub enum MainMessage {
     TitleChanged(window::Id, String),
 
     // Tray
+    TrayIconClick,
     TrayEvent(String),
 
     // Window controls

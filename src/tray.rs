@@ -2,7 +2,7 @@
 
 use std::time::Duration;
 
-use tray_icon::{Icon, TrayIcon, TrayIconBuilder, menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem}};
+use tray_icon::{Icon, TrayIcon, TrayIconBuilder, TrayIconEvent, menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem}};
 use iced::{task::{Never, Sipper, sipper}, Subscription};
 
 use crate::state::MainMessage;
@@ -24,6 +24,8 @@ where S: AsRef<str> {
     ]).expect("Failed to create menu items");
     TrayIconBuilder::new()
         .with_menu(Box::new(tray_menu))
+        .with_menu_on_left_click(false)
+        .with_menu_on_right_click(true)
         .with_tooltip(name)
         .with_icon(Icon::from_rgba(icon_image.into_raw(), width, height).expect("Could not instantiate icon image for tray."))
         .build()
@@ -32,14 +34,23 @@ where S: AsRef<str> {
 
 fn tray_stream() -> impl Sipper<Never, MainMessage> {
     sipper(async |mut output| {
-        let receiver = MenuEvent::receiver();
+        let menu_receiver = MenuEvent::receiver();
+        let icon_receiver = TrayIconEvent::receiver();
 
         let mut interval = tokio::time::interval(Duration::from_millis(100));
 
         loop {
             interval.tick().await;
-            if let Ok(event) = receiver.try_recv() {
+            if let Ok(event) = menu_receiver.try_recv() {
                 output.send(MainMessage::TrayEvent(event.id().0.clone())).await;
+            }
+            while let Ok(event) = icon_receiver.try_recv() {
+                match event {
+                    TrayIconEvent::DoubleClick { id: _, position: _, rect: _, button: _ } => {
+                        output.send(MainMessage::TrayIconClick).await;
+                    },
+                    _ => {}
+                }
             }
         }
     })

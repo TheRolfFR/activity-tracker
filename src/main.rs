@@ -4,6 +4,8 @@ use iced::widget::{
     button, center, center_x, column, container, operation, scrollable, space, text, text_input,
 };
 use iced::window;
+use iced::window::settings::PlatformSpecific;
+use iced::window::settings::platform::CornerPreference;
 use iced::{Size, Center, Fill, Function, Subscription, Task, Vector};
 
 use iced_fluent_theme::{
@@ -65,6 +67,13 @@ impl MyApp {
             size: Size {width: 677.0, height: 529.0},
             decorations: false,
             transparent: true,
+            closeable: false,
+            minimizable: true,
+            platform_specific: PlatformSpecific {
+                skip_taskbar: true,
+                corner_preference: CornerPreference::Round,
+                ..Default::default()
+            },
             ..window::Settings::default()
         });
 
@@ -146,21 +155,24 @@ impl MyApp {
             },
             MainMessage::TrayEvent(name) => {
                 match name.as_str() {
-                    "quit" => { dbg!("quit"); },
-                    "week_data" => { dbg!("week_data"); },
-                    "hide" => { dbg!("hide"); },
-                    _ => {}
-                };
-                Task::none()
+                    "quit" => { iced::exit() },
+                    "week_data" => { dbg!("week_data");
+                        Task::none() },
+                    "hide" => {
+                        Task::batch(
+                            self.windows.iter().map(|w| iced::window::minimize(*w.0, true))
+                        )
+                    },
+                    _ =>
+                    Task::none()
+                }
             },
-            MainMessage::WindowClose(id) => {
-                iced::window::close(id)
-                    .chain(self.remove_window(id))
-            }
+            MainMessage::TrayIconClick => self.windows.iter().next().map(|w| iced::window::minimize(*w.0, false).chain(iced::window::gain_focus(*w.0))).unwrap_or_default(),
             MainMessage::WindowMaximize(id) => {
                 iced::window::is_maximized(id)
                     .then(move |is_maximized| iced::window::maximize(id, !is_maximized))
             },
+            MainMessage::WindowClose(id) |
             MainMessage::WindowMinimize(id) => {
                 iced::window::minimize(id, true)
             },
