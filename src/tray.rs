@@ -2,7 +2,7 @@
 
 use std::time::Duration;
 
-use tray_icon::{Icon, TrayIcon, TrayIconBuilder, TrayIconEvent, menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem}};
+use tray_icon::{Icon, MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent, menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem}};
 use iced::{task::{Never, Sipper, sipper}, Subscription};
 
 use crate::state::MainMessage;
@@ -46,7 +46,7 @@ fn tray_stream() -> impl Sipper<Never, MainMessage> {
             }
             while let Ok(event) = icon_receiver.try_recv() {
                 match event {
-                    TrayIconEvent::DoubleClick { id: _, position: _, rect: _, button: _ } => {
+                    TrayIconEvent::Click { id: _, position: _, rect: _, button: MouseButton::Left, button_state: MouseButtonState::Up  } => {
                         output.send(MainMessage::TrayIconClick).await;
                     },
                     _ => {}
