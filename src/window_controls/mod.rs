@@ -1,11 +1,7 @@
 use iced::{
-    alignment::{Horizontal, Vertical},
-    widget::{
-        button, row,
-        svg::{self, Handle, Svg},
-        Container,
-    },
-    window, Color, Length,
+    Background, Color, Length, alignment::{Horizontal, Vertical}, widget::{
+        Container, button, rule, container, mouse_area, row, space, svg::{self, Handle, Svg},
+    }, window,
 };
 use iced_fluent_theme::button::medium;
 use std::sync::LazyLock;
@@ -45,11 +41,25 @@ fn transparent_button<'a>(ctype: ControlType, message: MainMessage) -> Element<'
         ControlType::Close => CLOSE_ICON.clone(),
     };
 
-    let svg_icon = Svg::new(icon).width(10).style(|_, _| svg::Style {
-        color: Some(Color::WHITE),
-    });
+    let icon_color = |is_hovered| Color::WHITE.scale_alpha(if is_hovered { 1.0 } else { 0.8956 });
 
-    let container = Container::new(svg_icon)
+    let icon: Element<'a, MainMessage> = match &ctype {
+        ControlType::Minimize => {
+            button("").width(10).height(1).style(move |_, status| button::Style {
+                background: Some(Background::Color(icon_color(status == button::Status::Hovered))),
+                ..Default::default()
+            }).into()
+        },
+        _ => {
+            Svg::new(icon).width(10).style(move |_, status| {
+                svg::Style {
+                    color: Some(icon_color(status == svg::Status::Hovered)),
+                }
+            }).into()
+        }
+    };
+
+    let container = Container::new(icon)
         .align_x(Horizontal::Center)
         .align_y(Vertical::Center)
         .height(Length::Fill)
