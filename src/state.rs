@@ -6,9 +6,6 @@ pub enum MainMessage {
     OpenWindow,
     WindowOpened(window::Id),
     WindowClosed(window::Id),
-    ScaleInputChanged(window::Id, String),
-    ScaleChanged(window::Id, String),
-    TitleChanged(window::Id, String),
 
     // Tray
     TrayIconClick,
@@ -17,5 +14,8 @@ pub enum MainMessage {
     // Window controls
     WindowMinimize(window::Id),
     WindowMaximize(window::Id),
-    WindowClose(window::Id)
+    WindowClose(window::Id),
+
+    // Drag area
+    WindowDrag(window::Id),
 }

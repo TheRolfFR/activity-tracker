@@ -1,12 +1,12 @@
 use std::collections::BTreeMap;
 
 use iced::widget::{
-    button, center, center_x, column, container, operation, scrollable, space, text, text_input,
+    center, row, column, container, mouse_area, operation, space
 };
-use iced::window;
+use iced::{Background, Color, alignment, window};
 use iced::window::settings::PlatformSpecific;
 use iced::window::settings::platform::CornerPreference;
-use iced::{Size, Center, Fill, Function, Subscription, Task, Vector};
+use iced::{Size, Fill, Shrink, Subscription, Task, Vector};
 
 use iced_fluent_theme::{
     BrandVariants, Theme,
@@ -55,7 +55,6 @@ struct MyApp {
 #[derive(Debug)]
 struct Window {
     title: String,
-    scale_input: String,
     current_scale: f32,
 }
 
@@ -128,30 +127,6 @@ impl MyApp {
             }
             MainMessage::WindowClosed(id) => {
                 self.remove_window(id)
-            }
-            MainMessage::ScaleInputChanged(id, scale) => {
-                if let Some(window) = self.windows.get_mut(&id) {
-                    window.scale_input = scale;
-                }
-
-                Task::none()
-            }
-            MainMessage::ScaleChanged(id, scale) => {
-                if let Some(window) = self.windows.get_mut(&id) {
-                    window.current_scale = scale
-                        .parse()
-                        .unwrap_or(window.current_scale)
-                        .clamp(0.5, 5.0);
-                }
-
-                Task::none()
-            }
-            MainMessage::TitleChanged(id, title) => {
-                if let Some(window) = self.windows.get_mut(&id) {
-                    window.title = title;
-                }
-
-                Task::none()
             },
             MainMessage::TrayEvent(name) => {
                 match name.as_str() {
@@ -167,6 +142,7 @@ impl MyApp {
                     Task::none()
                 }
             },
+            MainMessage::WindowDrag(id) => iced::window::drag(id),
             MainMessage::TrayIconClick => self.windows.iter().next().map(|w| iced::window::minimize(*w.0, false).chain(iced::window::gain_focus(*w.0))).unwrap_or_default(),
             MainMessage::WindowMaximize(id) => {
                 iced::window::is_maximized(id)
@@ -215,27 +191,13 @@ impl Window {
     fn new(count: usize) -> Self {
         Self {
             title: format!("Window_{count}"),
-            scale_input: "1.0".to_string(),
             current_scale: 1.0,
         }
     }
 
     fn view(&self, id: window::Id) -> Element<'_, MainMessage> {
-        let scale_input = column![
-            text("Window scale factor:"),
-            text_input("Window Scale", &self.scale_input)
-                .on_input(MainMessage::ScaleInputChanged.with(id))
-                .on_submit(MainMessage::ScaleChanged(id, self.scale_input.to_string()))
-        ];
-
-        let title_input = column![
-            text("Window title:"),
-            text_input("Window Title", &self.title)
-                .on_input(MainMessage::TitleChanged.with(id))
-                .id(format!("input-{id}"))
-        ];
-
-        let new_window_button = button(text("New Window")).on_press(MainMessage::OpenWindow);
+        let drag_area = mouse_area(space().width(Fill).height(Fill))
+            .on_press(MainMessage::WindowDrag(id));
 
         let top_window_controls = window_controls(
             true,
@@ -244,17 +206,28 @@ impl Window {
             id
         );
 
-        let content = column![
-            scale_input,
-            title_input,
-            new_window_button,
-            top_window_controls,
-        ]
-            .spacing(50)
-            .width(Fill)
-            .align_x(Center)
-            .width(200);
+        let top_bar = row![drag_area, top_window_controls].width(Fill).height(Shrink);
 
-        container(scrollable(center_x(content))).padding(10).into()
+        let gradient_content = container(column![
+            top_bar
+        ]).align_x(alignment::Horizontal::Left)
+        .align_y(alignment::Vertical::Top)
+        .height(Fill)
+        .width(Fill)
+        .style(|_| container::Style {
+            background: Some(Background::Color(Color::from_rgb8(255, 100, 100))),
+            ..Default::default()
+        });
+
+        let black_column = container(column![]).style(|_| {
+            container::Style {
+                background: Some(Background::Color(Color::BLACK)),
+                ..Default::default()
+            }
+        })
+        .height(Fill)
+        .width(107);
+
+        container(row![black_column, gradient_content]).into()
     }
 }
