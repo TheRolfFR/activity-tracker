@@ -152,7 +152,12 @@ impl MyApp {
                 .windows
                 .iter()
                 .next()
-                .map(|w| iced::window::minimize(*w.0, false).chain(iced::window::gain_focus(*w.0)))
+                .map(|w| {
+                    let id = w.0.clone();
+                    iced::window::is_minimized(id)
+                        .then(move |is_minimized| iced::window::minimize(id, !is_minimized.unwrap_or(false)))
+                            .chain(iced::window::gain_focus(id))
+                })
                 .unwrap_or_default(),
             MainMessage::WindowMaximize(id) => iced::window::is_maximized(id)
                 .then(move |is_maximized| iced::window::maximize(id, !is_maximized)),
@@ -207,9 +212,7 @@ impl Window {
         let drag_area =
             mouse_area(space().width(Fill).height(Fill)).on_press(MainMessage::WindowDrag(id));
 
-        let top_window_controls = WindowControls::empty(id)
-            .with_minimize()
-            .with_close();
+        let top_window_controls = WindowControls::empty(id).with_minimize().with_close();
 
         let top_bar = row![drag_area, top_window_controls]
             .width(Fill)
