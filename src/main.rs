@@ -1,27 +1,35 @@
 use std::collections::BTreeMap;
 
-use iced::widget::{
-    center, row, column, container, mouse_area, operation, space
-};
-use iced::{Background, Color, alignment, window};
-use iced::window::settings::PlatformSpecific;
+use iced::widget::svg::{Handle, Svg};
+use iced::widget::{center, column, container, mouse_area, operation, row, space, stack};
 use iced::window::settings::platform::CornerPreference;
-use iced::{Size, Fill, Shrink, Subscription, Task, Vector};
+use iced::window::settings::PlatformSpecific;
+use iced::{alignment, window, Background, Color};
+use iced::{Fill, Shrink, Size, Subscription, Task, Vector};
+use std::sync::LazyLock;
 
 use iced_fluent_theme::{
+    font::{self},
     BrandVariants, Theme,
-    font::{self}
 };
 
 mod state;
 mod tray;
 mod window_controls;
 
-use crate::tray::{tray_icon, tray_subscription};
 use crate::state::MainMessage;
+use crate::tray::{tray_icon, tray_subscription};
 use crate::window_controls::window_controls;
 
-const ICON: &[u8] = include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/Images/icon.png"));
+#[macro_export]
+macro_rules! handle {
+    ($name:ident, $svg:literal) => {
+        static $name: LazyLock<Handle> =
+            LazyLock::new(|| Handle::from_memory(include_bytes!(concat!($svg))));
+    };
+}
+
+const ICON: &[u8] = include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/Images/tray.png"));
 
 // Type alias to save specifying the theme every time
 pub type Element<'a, Message> = iced::Element<'a, Message, iced_fluent_theme::Theme>;
@@ -34,13 +42,10 @@ fn main() -> iced::Result {
         ..Default::default()
     };
 
-            let _tray_icon = tray_icon("Activity tracker", ICON);
+    let _tray_icon = tray_icon("Activity tracker", ICON);
 
     iced::daemon(MyApp::new, MyApp::update, MyApp::view)
-        .subscription(|state| Subscription::batch([
-            state.subscription(),
-            tray_subscription(),
-        ]))
+        .subscription(|state| Subscription::batch([state.subscription(), tray_subscription()]))
         .settings(settings)
         .title(MyApp::title)
         .theme(MyApp::theme)
@@ -63,7 +68,10 @@ impl MyApp {
         let (_, open) = window::open(window::Settings {
             icon: Some(window::icon::from_file_data(ICON, Option::None).unwrap()),
             resizable: false,
-            size: Size {width: 677.0, height: 529.0},
+            size: Size {
+                width: 678.0,
+                height: 529.0,
+            },
             decorations: false,
             transparent: true,
             closeable: false,
@@ -125,33 +133,32 @@ impl MyApp {
 
                 focus_input
             }
-            MainMessage::WindowClosed(id) => {
-                self.remove_window(id)
-            },
-            MainMessage::TrayEvent(name) => {
-                match name.as_str() {
-                    "quit" => { iced::exit() },
-                    "week_data" => { dbg!("week_data");
-                        Task::none() },
-                    "hide" => {
-                        Task::batch(
-                            self.windows.iter().map(|w| iced::window::minimize(*w.0, true))
-                        )
-                    },
-                    _ =>
+            MainMessage::WindowClosed(id) => self.remove_window(id),
+            MainMessage::TrayEvent(name) => match name.as_str() {
+                "quit" => iced::exit(),
+                "week_data" => {
+                    dbg!("week_data");
                     Task::none()
                 }
+                "hide" => Task::batch(
+                    self.windows
+                        .iter()
+                        .map(|w| iced::window::minimize(*w.0, true)),
+                ),
+                _ => Task::none(),
             },
             MainMessage::WindowDrag(id) => iced::window::drag(id),
-            MainMessage::TrayIconClick => self.windows.iter().next().map(|w| iced::window::minimize(*w.0, false).chain(iced::window::gain_focus(*w.0))).unwrap_or_default(),
-            MainMessage::WindowMaximize(id) => {
-                iced::window::is_maximized(id)
-                    .then(move |is_maximized| iced::window::maximize(id, !is_maximized))
-            },
-            MainMessage::WindowClose(id) |
-            MainMessage::WindowMinimize(id) => {
+            MainMessage::TrayIconClick => self
+                .windows
+                .iter()
+                .next()
+                .map(|w| iced::window::minimize(*w.0, false).chain(iced::window::gain_focus(*w.0)))
+                .unwrap_or_default(),
+            MainMessage::WindowMaximize(id) => iced::window::is_maximized(id)
+                .then(move |is_maximized| iced::window::maximize(id, !is_maximized)),
+            MainMessage::WindowClose(id) | MainMessage::WindowMinimize(id) => {
                 iced::window::minimize(id, true)
-            },
+            }
         }
     }
 
@@ -162,7 +169,6 @@ impl MyApp {
             space().into()
         }
     }
-
 
     fn title(&self, window: window::Id) -> String {
         self.windows
@@ -187,6 +193,8 @@ impl MyApp {
     }
 }
 
+handle!(GRADIENT_HANDLE, "../Images/orange_gradient.svg");
+
 impl Window {
     fn new(count: usize) -> Self {
         Self {
@@ -196,38 +204,36 @@ impl Window {
     }
 
     fn view(&self, id: window::Id) -> Element<'_, MainMessage> {
-        let drag_area = mouse_area(space().width(Fill).height(Fill))
-            .on_press(MainMessage::WindowDrag(id));
+        let drag_area =
+            mouse_area(space().width(Fill).height(Fill)).on_press(MainMessage::WindowDrag(id));
 
-        let top_window_controls = window_controls(
-            true,
-            false,
-            false,
-            id
-        );
+        let top_window_controls = window_controls(true, false, false, id);
 
-        let top_bar = row![drag_area, top_window_controls].width(Fill).height(Shrink);
+        let top_bar = row![drag_area, top_window_controls]
+            .width(Fill)
+            .height(Shrink);
 
-        let gradient_content = container(column![
-            top_bar
-        ]).align_x(alignment::Horizontal::Left)
-        .align_y(alignment::Vertical::Top)
-        .height(Fill)
-        .width(Fill)
-        .style(|_| container::Style {
-            background: Some(Background::Color(Color::from_rgb8(255, 100, 100))),
-            ..Default::default()
-        });
+        let gradient = Svg::new(GRADIENT_HANDLE.clone())
+            .height(Fill)
+            .width(Fill)
+            .content_fit(iced::ContentFit::Fill);
 
-        let black_column = container(column![]).style(|_| {
-            container::Style {
+        let gradient_content = container(column![top_bar])
+            .align_x(alignment::Horizontal::Left)
+            .align_y(alignment::Vertical::Top)
+            .height(Fill)
+            .width(Fill);
+
+        let gradient_container = stack!(gradient, gradient_content);
+
+        let black_column = container(column![])
+            .style(|_| container::Style {
                 background: Some(Background::Color(Color::BLACK)),
                 ..Default::default()
-            }
-        })
-        .height(Fill)
-        .width(107);
+            })
+            .height(Fill)
+            .width(107);
 
-        container(row![black_column, gradient_content]).into()
+        container(row![black_column, gradient_container]).into()
     }
 }

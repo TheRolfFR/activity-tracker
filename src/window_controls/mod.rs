@@ -1,6 +1,6 @@
 use iced::{
     Background, Color, Length, alignment::{Horizontal, Vertical}, widget::{
-        Container, button, rule, container, mouse_area, row, space, svg::{self, Handle, Svg},
+        Container, button, row, svg::{self, Svg, Handle},
     }, window,
 };
 use iced_fluent_theme::button::medium;
@@ -8,18 +8,12 @@ use std::sync::LazyLock;
 
 use crate::state::MainMessage;
 use crate::Element;
+use crate::handle;
 
-macro_rules! icon {
-    ($name:ident, $svg:literal) => {
-        static $name: LazyLock<Handle> =
-            LazyLock::new(|| Handle::from_memory(include_bytes!(concat!($svg))));
-    };
-}
-
-icon!(MINIMIZE_ICON, "win/minimize.svg");
-icon!(MAXIMIZE_ICON, "win/maximize.svg");
-icon!(MAXIMIZE_RESTORE_ICON, "win/maximize_restore.svg");
-icon!(CLOSE_ICON, "win/close.svg");
+handle!(MINIMIZE_ICON, "win/minimize.svg");
+handle!(MAXIMIZE_ICON, "win/maximize.svg");
+handle!(MAXIMIZE_RESTORE_ICON, "win/maximize_restore.svg");
+handle!(CLOSE_ICON, "win/close.svg");
 
 #[derive(Clone)]
 enum ControlType {
@@ -44,6 +38,7 @@ fn transparent_button<'a>(ctype: ControlType, message: MainMessage) -> Element<'
     let icon_color = |is_hovered| Color::WHITE.scale_alpha(if is_hovered { 1.0 } else { 0.8956 });
 
     let icon: Element<'a, MainMessage> = match &ctype {
+        // fix for minimize icon not rendered because 1x10, empty button with same white background fill as svg color
         ControlType::Minimize => {
             button("").width(10).height(1).style(move |_, status| button::Style {
                 background: Some(Background::Color(icon_color(status == button::Status::Hovered))),
@@ -72,7 +67,7 @@ fn transparent_button<'a>(ctype: ControlType, message: MainMessage) -> Element<'
                     Some(iced::Background::Color(Color::from_rgb8(196, 43, 28)))
                 }
                 (_, button::Status::Hovered) => {
-                    Some(iced::Background::Color(Color::WHITE.scale_alpha(0.35)))
+                    Some(iced::Background::Color(Color::WHITE.scale_alpha(0.20)))
                 }
                 (_, _) => None,
             },
