@@ -27,6 +27,7 @@ dependencies = [
  "iced",
  "iced-fluent-theme",
  "iced_aw",
+ "iced_core",
  "image 0.24.9",
  "log",
  "rdev",

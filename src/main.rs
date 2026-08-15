@@ -19,7 +19,7 @@ mod window_controls;
 
 use crate::state::MainMessage;
 use crate::tray::{tray_icon, tray_subscription};
-use crate::window_controls::window_controls;
+use crate::window_controls::WindowControls;
 
 #[macro_export]
 macro_rules! handle {
@@ -207,7 +207,9 @@ impl Window {
         let drag_area =
             mouse_area(space().width(Fill).height(Fill)).on_press(MainMessage::WindowDrag(id));
 
-        let top_window_controls = window_controls(true, false, false, id);
+        let top_window_controls = WindowControls::empty(id)
+            .with_minimize()
+            .with_close();
 
         let top_bar = row![drag_area, top_window_controls]
             .width(Fill)
