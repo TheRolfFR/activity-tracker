@@ -26,6 +26,13 @@ Recommended IDE Setup:
 
 - [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
 
+## Required linux packages
+
+gtk3, xdotool and libappindicator are required to work:
+```
+sudo pacman -S gtk3 xdotool libappindicator
+```
+
 Prepare your environment: follow the guide from https://tauri.app/v1/guides/getting-started/prerequisites.
 
 Install JS and Rust dependencies

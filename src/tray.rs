@@ -16,6 +16,9 @@ where S: AsRef<str> {
 
     let (width, height) = icon_image.dimensions();
 
+    #[cfg(target_os = "linux")]
+    gtk::init().unwrap();
+
     let tray_menu = Menu::with_items(&[
         &MenuItem::with_id("quit", "Quit", true, None),
         &MenuItem::with_id("week_data", "Week data", true, None),

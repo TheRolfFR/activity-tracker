@@ -2,7 +2,9 @@ use std::collections::BTreeMap;
 
 use iced::widget::svg::{Handle, Svg};
 use iced::widget::{center, column, container, mouse_area, operation, row, space, stack};
+#[cfg(target_os = "windows")]
 use iced::window::settings::platform::CornerPreference;
+#[cfg(target_os = "windows")]
 use iced::window::settings::PlatformSpecific;
 use iced::{alignment, window, Background, Color};
 use iced::{Fill, Shrink, Size, Subscription, Task, Vector};
@@ -76,6 +78,7 @@ impl MyApp {
             transparent: true,
             closeable: false,
             minimizable: true,
+            #[cfg(target_os = "windows")]
             platform_specific: PlatformSpecific {
                 skip_taskbar: true,
                 corner_preference: CornerPreference::Round,

@@ -33,6 +33,9 @@ tokio = { version = "1.48.0", features = ["time"] }
 tray-icon = "0.24.2"
 image = "0.25.10"
 
+[target.'cfg(target_os = "linux")'.dependencies]
+gtk = "0.18"   # pra inicializar e rodar o loop GT
+
 [[bin]]
 name = "activity-tracker-app"
 path = "src/main.rs"
