@@ -18,6 +18,7 @@ use iced_fluent_theme::{
 mod state;
 mod tray;
 mod window_controls;
+mod islands;
 
 use crate::state::MainMessage;
 use crate::tray::{tray_icon, tray_subscription};
@@ -234,7 +235,7 @@ impl Window {
 
         let gradient_container = stack!(gradient, gradient_content);
 
-        let black_column = container(column![])
+        let black_column = container(crate::islands::left_bar::left_bar())
             .style(|_| container::Style {
                 background: Some(Background::Color(Color::BLACK)),
                 ..Default::default()
