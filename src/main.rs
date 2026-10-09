@@ -19,6 +19,7 @@ mod state;
 mod tray;
 mod window_controls;
 mod islands;
+mod component;
 
 mod assets;
 
