@@ -18,4 +18,7 @@ pub enum MainMessage {
 
     // Drag area
     WindowDrag(window::Id),
+
+    // Load task
+    FontLoaded(Result<(), iced::font::Error>),
 }

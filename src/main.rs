@@ -20,6 +20,9 @@ mod tray;
 mod window_controls;
 mod islands;
 
+mod assets;
+
+use crate::assets::fonts::{SEGOE_UI_LIGHT, SEGOE_UI_REGULAR, SEGOE_UI_SEMI_BOLD};
 use crate::state::MainMessage;
 use crate::tray::{tray_icon, tray_subscription};
 use crate::window_controls::WindowControls;
@@ -68,6 +71,10 @@ struct Window {
 
 impl MyApp {
     fn new() -> (Self, Task<MainMessage>) {
+        let segoe_ui_regular_task = iced::font::load(SEGOE_UI_REGULAR);
+        let segoe_ui_light_task = iced::font::load(SEGOE_UI_LIGHT);
+        let segoe_ui_semibold_task = iced::font::load(SEGOE_UI_SEMI_BOLD);
+
         let (_, open) = window::open(window::Settings {
             icon: Some(window::icon::from_file_data(ICON, Option::None).unwrap()),
             resizable: false,
@@ -92,7 +99,12 @@ impl MyApp {
             Self {
                 windows: BTreeMap::new(),
             },
-            open.map(MainMessage::WindowOpened),
+            Task::batch([
+                segoe_ui_light_task.map(MainMessage::FontLoaded),
+                segoe_ui_regular_task.map(MainMessage::FontLoaded),
+                segoe_ui_semibold_task.map(MainMessage::FontLoaded),
+                open.map(MainMessage::WindowOpened),
+            ]),
         )
     }
 
@@ -136,6 +148,12 @@ impl MyApp {
                 self.windows.insert(id, window);
 
                 focus_input
+            }
+            MainMessage::FontLoaded(res) => {
+                if res.is_err() {
+                    eprintln!("failed to load font: {res:?}");
+                }
+                Task::none()
             }
             MainMessage::WindowClosed(id) => self.remove_window(id),
             MainMessage::TrayEvent(name) => match name.as_str() {
