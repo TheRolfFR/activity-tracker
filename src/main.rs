@@ -23,10 +23,11 @@ mod component;
 
 mod assets;
 
-use crate::assets::fonts::{SEGOE_UI_LIGHT, SEGOE_UI_REGULAR, SEGOE_UI_SEMI_BOLD};
+use crate::assets::fonts::*;
 use crate::state::MainMessage;
 use crate::tray::{tray_icon, tray_subscription};
 use crate::window_controls::WindowControls;
+use crate::islands::header::main_header;
 
 #[macro_export]
 macro_rules! handle {
@@ -75,6 +76,7 @@ impl MyApp {
         let segoe_ui_regular_task = iced::font::load(SEGOE_UI_REGULAR);
         let segoe_ui_light_task = iced::font::load(SEGOE_UI_LIGHT);
         let segoe_ui_semibold_task = iced::font::load(SEGOE_UI_SEMI_BOLD);
+        let segoe_ui_bold_task = iced::font::load(SEGOE_UI_BOLD);
 
         let (_, open) = window::open(window::Settings {
             icon: Some(window::icon::from_file_data(ICON, Option::None).unwrap()),
@@ -104,6 +106,7 @@ impl MyApp {
                 segoe_ui_light_task.map(MainMessage::FontLoaded),
                 segoe_ui_regular_task.map(MainMessage::FontLoaded),
                 segoe_ui_semibold_task.map(MainMessage::FontLoaded),
+                segoe_ui_bold_task.map(MainMessage::FontLoaded),
                 open.map(MainMessage::WindowOpened),
             ]),
         )
@@ -246,7 +249,22 @@ impl Window {
             .width(Fill)
             .content_fit(iced::ContentFit::Fill);
 
-        let gradient_content = container(column![top_bar])
+        let gradient_content = container(column![
+                top_bar,
+                container(column![
+                    main_header("Friday, April 26", "7h32"),
+                ].width(Fill))
+                .align_x(alignment::Horizontal::Left)
+                .align_y(alignment::Vertical::Top)
+                .style(|_| -> container::Style {
+                    container::Style {
+                        text_color: Color::WHITE.into(),
+                        ..Default::default()
+                    }
+                })
+                .height(Fill)
+                .width(Fill)
+            ])
             .align_x(alignment::Horizontal::Left)
             .align_y(alignment::Vertical::Top)
             .height(Fill)
