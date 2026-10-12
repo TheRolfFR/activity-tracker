@@ -24,9 +24,13 @@ mod component;
 mod assets;
 
 use crate::assets::fonts::*;
+
 use crate::state::MainMessage;
+
 use crate::tray::{tray_icon, tray_subscription};
 use crate::window_controls::WindowControls;
+
+use crate::islands::activity_graphs::ActivityGraphs;
 use crate::islands::header::main_header;
 
 #[macro_export]
@@ -63,6 +67,7 @@ fn main() -> iced::Result {
 
 struct MyApp {
     windows: BTreeMap<window::Id, Window>,
+    pub activity_graphs: ActivityGraphs,
 }
 
 #[derive(Debug)]
@@ -101,6 +106,7 @@ impl MyApp {
         (
             Self {
                 windows: BTreeMap::new(),
+                activity_graphs: ActivityGraphs::new(),
             },
             Task::batch([
                 segoe_ui_light_task.map(MainMessage::FontLoaded),
@@ -195,7 +201,7 @@ impl MyApp {
 
     fn view(&self, window_id: window::Id) -> Element<'_, MainMessage> {
         if let Some(window) = self.windows.get(&window_id) {
-            center(window.view(window_id)).into()
+            center(window.view(window_id, self)).into()
         } else {
             space().into()
         }
@@ -234,7 +240,7 @@ impl Window {
         }
     }
 
-    fn view(&self, id: window::Id) -> Element<'_, MainMessage> {
+    fn view<'a>(&self, id: window::Id, app: &'a MyApp) -> Element<'a, MainMessage> {
         let drag_area =
             mouse_area(space().width(Fill).height(Fill)).on_press(MainMessage::WindowDrag(id));
 
@@ -253,6 +259,7 @@ impl Window {
                 top_bar,
                 container(column![
                     main_header("Friday, April 26", "7h32"),
+                    app.activity_graphs.view(),
                 ].width(Fill))
                 .align_x(alignment::Horizontal::Left)
                 .align_y(alignment::Vertical::Top)
