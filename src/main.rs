@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 
+use chrono::{DateTime, TimeDelta, Utc};
 use iced::widget::svg::{Handle, Svg};
 use iced::widget::{center, column, container, mouse_area, operation, row, space, stack};
 #[cfg(target_os = "windows")]
@@ -103,10 +104,19 @@ impl MyApp {
             ..window::Settings::default()
         });
 
+        let mut activity_graphs = ActivityGraphs::new();
+
+        for i in 0..100 {
+            let val = 75f32 + 12.5f32 * ((i as f32) * 0.1f32).sin() + (i as f32) * 0.5;
+            let date: DateTime<Utc> = chrono::offset::Utc::now() + TimeDelta::minutes(i);
+            activity_graphs.click_activity.push_data((date, val as u32));
+            activity_graphs.input_activity.push_data((date, val as u32));
+        }
+
         (
             Self {
                 windows: BTreeMap::new(),
-                activity_graphs: ActivityGraphs::new(),
+                activity_graphs,
             },
             Task::batch([
                 segoe_ui_light_task.map(MainMessage::FontLoaded),
