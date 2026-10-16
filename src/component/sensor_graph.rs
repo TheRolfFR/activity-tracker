@@ -1,14 +1,13 @@
 use std::collections::VecDeque;
 
 use chrono::{DateTime, Utc};
-use iced::{Background, Color, Length, border, widget::{Space, container, row, text}};
+use iced::{Color, Length, widget::{Space, container, row, text}};
 use iced::font::{Family, Font, Weight};
 use iced::{widget::column};
-use iced_fluent_theme::shadow;
 use plotters::{prelude::ChartBuilder, style::RGBColor};
 use plotters_iced2::{Chart, ChartWidget, DrawingBackend};
 
-use crate::{Element, state::MainMessage};
+use crate::{Element, component::activity_card::activity_card_style, state::MainMessage};
 
 pub type SensorSample = (DateTime<Utc>, u32);
 
@@ -68,13 +67,11 @@ impl SensorGraph {
 
         let chart = ChartWidget::new(self).height(Length::Fill).width(Length::Fill);
 
-        let chart_backdrop = container(chart).height(167).width(Length::Fill).style(|_| container::Style {
-            border: border::rounded(7),
-            background: Background::Color(Color::WHITE.scale_alpha(0.05)).into(),
-            shadow: shadow::DARK.shadow2,
-            snap: true,
-            ..Default::default()
-        }).clip(true);
+        let chart_backdrop = container(chart)
+            .height(167)
+            .width(Length::Fill)
+            .style(activity_card_style)
+            .clip(true);
 
         let container = column![
             header_row,

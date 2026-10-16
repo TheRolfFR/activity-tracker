@@ -3,11 +3,12 @@
 use std::collections::BTreeMap;
 
 use chrono::{Timelike, Utc};
-use iced::{Alignment, padding};
-use iced::widget::Column;
+use iced::{Alignment, Length, padding};
+use iced::widget::{Column, container};
 use sorted_vec::SortedVec;
 
 use crate::Element;
+use crate::component::activity_card::activity_card_style;
 use crate::component::activity_row;
 use crate::state::MainMessage;
 
@@ -112,6 +113,15 @@ impl ActivityBar {
             activity_row::draw_activity_row(format!("{h}h"), &serie_shades)
         });
 
-        Column::with_children(rows).align_x(Alignment::Center).spacing(3).padding(padding::horizontal(14).top(14)).into()
+        let hour_columns = Column::with_children(rows)
+            .align_x(Alignment::Center)
+            .spacing(3);
+
+        container(
+            container(hour_columns)
+                .style(activity_card_style)
+                .center(Length::Fill)
+                .padding(padding::vertical(8))
+        ).padding(padding::horizontal(14).top(14)).into()
     }
 }
