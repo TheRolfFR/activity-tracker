@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use iced::window;
 
 #[derive(Debug, Clone)]
@@ -6,6 +7,9 @@ pub enum MainMessage {
     OpenWindow,
     WindowOpened(window::Id),
     WindowClosed(window::Id),
+
+    // New activity data
+    ActivityData(DateTime<Utc>, u32),
 
     // Tray
     TrayIconClick,

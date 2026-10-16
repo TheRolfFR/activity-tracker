@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 
 use chrono::{DateTime, Utc};
-use iced::{Background, Color, Length, border, padding, widget::{Space, container, row, text}};
+use iced::{Background, Color, Length, border, widget::{Space, container, row, text}};
 use iced::font::{Family, Font, Weight};
 use iced::{widget::column};
 use iced_fluent_theme::shadow;

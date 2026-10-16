@@ -24,8 +24,9 @@ mod component;
 
 mod assets;
 
-use crate::assets::fonts::*;
+use crate::assets::{fonts::*, images::*};
 
+use crate::islands::activity_bar::ActivityBar;
 use crate::state::MainMessage;
 
 use crate::tray::{tray_icon, tray_subscription};
@@ -41,8 +42,6 @@ macro_rules! handle {
             LazyLock::new(|| Handle::from_memory(include_bytes!(concat!($svg))));
     };
 }
-
-const ICON: &[u8] = include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/Images/tray.png"));
 
 // Type alias to save specifying the theme every time
 pub type Element<'a, Message> = iced::Element<'a, Message, iced_fluent_theme::Theme>;
@@ -68,6 +67,7 @@ fn main() -> iced::Result {
 
 struct MyApp {
     windows: BTreeMap<window::Id, Window>,
+    activity_bar: ActivityBar,
     pub activity_graphs: ActivityGraphs,
 }
 
@@ -117,6 +117,7 @@ impl MyApp {
             Self {
                 windows: BTreeMap::new(),
                 activity_graphs,
+                activity_bar: ActivityBar::new(),
             },
             Task::batch([
                 segoe_ui_light_task.map(MainMessage::FontLoaded),
@@ -205,6 +206,10 @@ impl MyApp {
                 .then(move |is_maximized| iced::window::maximize(id, !is_maximized)),
             MainMessage::WindowClose(id) | MainMessage::WindowMinimize(id) => {
                 iced::window::minimize(id, true)
+            },
+            MainMessage::ActivityData(date, activity) => {
+                self.activity_bar.push_data(date, activity);
+                Task::none()
             }
         }
     }
@@ -269,6 +274,7 @@ impl Window {
                 top_bar,
                 container(column![
                     main_header("Friday, April 26", "7h32"),
+                    app.activity_bar.view(),
                     app.activity_graphs.view(),
                 ].width(Fill))
                 .align_x(alignment::Horizontal::Left)
