@@ -1,6 +1,6 @@
 //! Activity Bar Component
 
-use iced::{Background, Color, Length, border, padding};
+use iced::{Background, Color, Length, border};
 use iced::widget::{text, container, Row, row, tooltip};
 use iced_core::text::Alignment;
 

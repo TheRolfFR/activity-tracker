@@ -1,26 +1,20 @@
 use std::str::FromStr;
 
-use crate::Element;
-use crate::state::MainMessage;
 use iced::{Radians, border};
 use iced::gradient::Linear;
 use iced::{Border, Color, Length, alignment::Vertical, border::Radius};
-use iced::font::{Family, Font, Weight};
 use iced::widget::{Column, column, container, row, space};
 use iced::widget::{button::{self, Button}, text, image};
 use iced_core::{image::FilterMethod, text::LineHeight};
 
+use crate::Element;
+use crate::assets::fonts::REGULAR;
+use crate::state::MainMessage;
 use crate::component::labelled_stat;
 
 fn top_logo<'a>() -> Element<'a, MainMessage> {
     let image_icon = image("Images/icon.png").width(24).filter_method(FilterMethod::Linear);
-
-    let font = Font {
-        family: Family::Name("Segoe UI"),
-        weight: Weight::Semibold,
-        ..Default::default()
-    };
-    let title = text("Activity\nTracker").size(14).color(Color::WHITE).font(font);
+    let title = text("Activity\nTracker").size(14).color(Color::WHITE).font(REGULAR);
 
     row![
         image_icon,
@@ -29,13 +23,8 @@ fn top_logo<'a>() -> Element<'a, MainMessage> {
 }
 
 fn week_stats<'a>() -> Element<'a, MainMessage> {
-    let font = Font {
-        family: Family::Name("Segoe UI"),
-        weight: Weight::Normal,
-        ..Default::default()
-    };
     let button_text = text("Week stats")
-        .size(12).color(Color::WHITE).font(font)
+        .size(12).color(Color::WHITE).font(REGULAR)
         .line_height(LineHeight::Absolute(21.into()))
         .center()
         .width(Length::Fill);

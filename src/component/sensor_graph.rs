@@ -59,7 +59,7 @@ impl SensorGraph {
         let title_text = text(self.title).width(Length::Fill).font(semibold).size(16).line_height(1.2);
         let header_row = row![title_text, rate_text];
 
-        let spacing = Space::new().height(14);
+        let spacing = Space::new().height(5);
 
         let last_activity_rate_text = text(format!("Last minute ({}) (122)", self.last_rate_per_minute())).font(semibold).style(|_| text::Style {
             color: Some(Color::WHITE.scale_alpha(0.7)),

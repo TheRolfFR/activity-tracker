@@ -7,7 +7,7 @@ use iced::widget::{center, column, container, mouse_area, operation, row, space,
 use iced::window::settings::platform::CornerPreference;
 #[cfg(target_os = "windows")]
 use iced::window::settings::PlatformSpecific;
-use iced::{alignment, window, Background, Color};
+use iced::{Background, Color, alignment, window};
 use iced::{Fill, Shrink, Size, Subscription, Task, Vector};
 use std::sync::LazyLock;
 
@@ -50,7 +50,7 @@ fn main() -> iced::Result {
     let settings = iced::Settings {
         fonts: font::load(),
         antialiasing: true,
-        default_font: font::REGULAR,
+        default_font: REGULAR,
         ..Default::default()
     };
 
