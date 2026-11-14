@@ -1,4 +1,4 @@
-use crate::{data::{activity::Activity, stats::{DayStats, WeekStats}}, week_data::WeekData};
+use crate::data::{activity::Activity, stats::{DayStats, WeekStats}, week_data::WeekData};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct DayPayload {

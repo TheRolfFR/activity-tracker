@@ -2,7 +2,8 @@ use std::sync::mpsc::{Receiver, Sender};
 
 use log::error;
 
-use crate::{data::{ONE_MINUTE, ONE_SECOND, records::Record, payload::Payload}, storage::DayRecordFile, throttle::Throttle, week_data::WeekData};
+use crate::data::{ONE_MINUTE, ONE_SECOND, records::Record, payload::Payload, week_data::WeekData};
+use crate::{storage::DayRecordFile, throttle::Throttle};
 
 pub enum DataMessage {
     EventRecord(Record),

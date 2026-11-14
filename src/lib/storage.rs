@@ -2,7 +2,7 @@ use std::{fs::File, path::PathBuf, io::Read};
 
 use chrono::Utc;
 
-use crate::{data::records::DayRecord, week_data::WeekData};
+use crate::data::{records::DayRecord, week_data::WeekData};
 
 pub struct DayRecordFile;
 

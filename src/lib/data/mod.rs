@@ -5,6 +5,7 @@ pub mod measure;
 pub mod payload;
 pub mod records;
 pub mod stats;
+pub mod week_data;
 
 pub const ONE_MINUTE: Duration = Duration::from_secs(60);
 pub const ONE_SECOND: Duration = Duration::from_secs(1);
