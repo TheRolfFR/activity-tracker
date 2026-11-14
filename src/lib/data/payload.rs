@@ -1,6 +1,4 @@
-use std::collections::HashMap;
-
-use crate::{day_record::DayStats, week_stats::WeekStats, data::activity::Activity, week_data::WeekData};
+use crate::{data::{activity::Activity, stats::{DayStats, WeekStats}}, week_data::WeekData};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct DayPayload {
@@ -16,41 +14,39 @@ pub struct Payload {
     today: u32,
     today_stats: DayStats,
     week_stats: WeekStats,
-    week_payload: HashMap<u32, DayPayload>,
+    week_payload: [Option<DayPayload>; 7],
     pub version: String
 }
 
-impl From<&mut WeekData> for Payload {
-    fn from(week_data: &mut WeekData) -> Self {
-        let today = week_data.get_today();
-        let act = today.get_activity();
+impl From<&WeekData> for Payload {
+    fn from(week_data: &WeekData) -> Self {
+        let today = week_data.today().clone().unwrap_or_default();
+        let act = Activity::from(&today);
 
-        let today_stats = today.get_stats();
+        let today_stats = DayStats::from(&today);
         let dur_secs = today_stats.duration.as_secs();
 
-        let week_payload = week_data.days.iter().fold(HashMap::new(), |mut acc, (day, data)| {
-            let stats = data.get_stats();
-            let day_dur_secs = stats.duration.as_secs();
-            let time = u64::div_ceil(day_dur_secs, 60);
+        let week_payload: [Option<DayPayload>; 7] = week_data.days.clone().map(|data_opt|
+            data_opt.map(|data| {
+                let stats = DayStats::from(&data);
+                let day_dur_secs = stats.duration.as_secs();
+                let time = u64::div_ceil(day_dur_secs, 60);
 
-            let this_day = DayPayload {
-                activity: data.get_activity(),
-                adjusted: data.adjusted,
-                stats,
-                time
-            };
-
-            acc.insert(*day, this_day);
-
-            return acc;
-        });
+                DayPayload {
+                    activity: Activity::from(&data),
+                    adjusted: data.adjusted,
+                    stats,
+                    time
+                }
+            })
+        );
 
         Self {
             activity: act,
             today_stats,
             week_payload,
             today: (dur_secs/60u64) as u32,
-            week_stats: WeekStats::from(week_data.days.values_mut()),
+            week_stats: WeekStats::from(&week_data.days),
             version: String::new()
         }
     }

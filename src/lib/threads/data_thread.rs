@@ -33,14 +33,14 @@ pub fn data_thread(evt_rchan: Receiver<DataMessage>, evt_schan: Sender<Payload>)
         }
 
         if ui_throttle.update() {
-            let payload = Payload::from(&mut week_data);
+            let payload = Payload::from(&week_data);
             if let Err(err) = evt_schan.send(payload) {
                 error!("Failed to send payload from data thread: {}", err);
             }
         }
 
-        if file_throttle.update() {
-            DayRecordFile::save(week_data.get_today().clone());
+        if file_throttle.update() && let Some(today) = week_data.today() {
+            DayRecordFile::save(today);
         }
     }
 }
