@@ -1,6 +1,10 @@
 use std::process::Command;
 
 fn main() {
+    let commit_hash_output = Command::new("git").args(&["describe", "--tags", "--abrev=0"]).output().unwrap();
+    let commit_hash = String::from_utf8(commit_hash_output.stdout).unwrap();
+    println!("cargo:rustc-env=GIT_VERSION={}", commit_hash);
+
     let commit_hash_output = Command::new("git").args(&["rev-parse", "--short", "HEAD"]).output().unwrap();
     let commit_hash = String::from_utf8(commit_hash_output.stdout).unwrap();
     println!("cargo:rustc-env=GIT_HASH={}", commit_hash);

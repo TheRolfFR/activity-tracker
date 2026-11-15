@@ -16,11 +16,12 @@ use iced_fluent_theme::{
     BrandVariants, Theme,
 };
 
+mod component;
+mod islands;
+mod window_controls;
+mod key_events;
 mod state;
 mod tray;
-mod window_controls;
-mod islands;
-mod component;
 
 mod assets;
 
@@ -29,6 +30,7 @@ use crate::assets::{fonts::*, images::*};
 use crate::islands::activity_bar::ActivityBar;
 use crate::state::MainMessage;
 
+use crate::key_events::data_subscription;
 use crate::tray::{tray_icon, tray_subscription};
 use crate::window_controls::WindowControls;
 
@@ -57,7 +59,11 @@ fn main() -> iced::Result {
     let _tray_icon = tray_icon("Activity tracker", ICON);
 
     iced::daemon(MyApp::new, MyApp::update, MyApp::view)
-        .subscription(|state| Subscription::batch([state.subscription(), tray_subscription()]))
+        .subscription(|state| Subscription::batch([
+            state.subscription(),
+            tray_subscription(),
+            data_subscription()
+        ]))
         .settings(settings)
         .title(MyApp::title)
         .theme(MyApp::theme)
@@ -209,6 +215,10 @@ impl MyApp {
             },
             MainMessage::ActivityData(date, activity) => {
                 self.activity_bar.push_data(date, activity);
+                Task::none()
+            },
+            MainMessage::Payload(payload) => {
+                dbg!(payload);
                 Task::none()
             }
         }

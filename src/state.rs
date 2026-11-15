@@ -1,6 +1,8 @@
 use chrono::{DateTime, Utc};
 use iced::window;
 
+use activity_tracker_lib::data::payload::Payload;
+
 #[derive(Debug, Clone)]
 pub enum MainMessage {
     // Windows
@@ -25,4 +27,7 @@ pub enum MainMessage {
 
     // Load task
     FontLoaded(Result<(), iced::font::Error>),
+
+    // Main data
+    Payload(Payload)
 }
