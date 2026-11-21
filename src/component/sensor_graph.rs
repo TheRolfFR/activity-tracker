@@ -1,5 +1,3 @@
-use std::collections::VecDeque;
-
 use chrono::{DateTime, Utc};
 use iced::{Color, Length, widget::{Space, container, row, text}};
 use iced::font::{Family, Font, Weight};
@@ -13,7 +11,7 @@ pub type SensorSample = (DateTime<Utc>, u32);
 
 pub struct SensorGraph {
     title: &'static str,
-    data: VecDeque<SensorSample>,
+    data: Vec<SensorSample>,
     color: RGBColor,
 }
 
@@ -22,13 +20,13 @@ impl SensorGraph {
     pub fn new(title: &'static str) -> Self {
         Self {
             title,
-            data: VecDeque::default(),
+            data: Vec::default(),
             color: RGBColor(255,255,255),
         }
     }
 
-    pub fn push_data(&mut self, data: SensorSample) {
-        self.data.push_front(data);
+    pub fn set(&mut self, data: Vec<SensorSample>) {
+        self.data = data;
     }
 
     fn rate_per_minute(&self) -> String {
@@ -43,7 +41,7 @@ impl SensorGraph {
     }
 
     fn last_rate_per_minute(&self) -> String {
-        return self.data.front()
+        return self.data.last()
             .map(|d| d.1.to_string())
             .unwrap_or("-".into())
     }

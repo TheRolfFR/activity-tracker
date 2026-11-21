@@ -82,12 +82,18 @@ impl ActivityBar {
         Self::default()
     }
 
-    pub fn push_data(&mut self, date: chrono::DateTime<Utc>, activity: u32) {
-        let hour = date.hour() as u8;
-        let minute = date.minute() as usize;
+    pub fn set(&mut self, data: Vec<(chrono::DateTime<Utc>, u32)>) {
+        self.value_data.clear();
+        self.day_data.clear();
 
-        self.day_data.entry(hour).or_insert([0u32; 60])[minute] = activity;
-        self.value_data.push(activity);
+        for (date, activity) in data {
+            let hour = date.hour() as u8;
+            let minute = date.minute() as usize;
+
+            self.day_data.entry(hour).or_insert([0u32; 60])[minute] += activity;
+            self.value_data.push(activity);
+        }
+
         self.shades = color_shades::ColorShades::compute_color_shades(self.value_data.iter());
     }
 

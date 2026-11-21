@@ -1,6 +1,5 @@
 use std::collections::BTreeMap;
 
-use chrono::{DateTime, TimeDelta, Utc};
 use iced::widget::svg::{Handle, Svg};
 use iced::widget::{center, column, container, mouse_area, operation, row, space, stack};
 #[cfg(target_os = "windows")]
@@ -27,6 +26,7 @@ mod assets;
 
 use crate::assets::{fonts::*, images::*};
 
+use crate::component::sensor_graph::SensorSample;
 use crate::islands::activity_bar::ActivityBar;
 use crate::state::MainMessage;
 
@@ -110,14 +110,7 @@ impl MyApp {
             ..window::Settings::default()
         });
 
-        let mut activity_graphs = ActivityGraphs::new();
-
-        for i in 0..100 {
-            let val = 75f32 + 12.5f32 * ((i as f32) * 0.1f32).sin() + (i as f32) * 0.5;
-            let date: DateTime<Utc> = chrono::offset::Utc::now() + TimeDelta::minutes(i);
-            activity_graphs.click_activity.push_data((date, val as u32));
-            activity_graphs.input_activity.push_data((date, val as u32));
-        }
+        let activity_graphs = ActivityGraphs::new();
 
         (
             Self {
@@ -213,11 +206,17 @@ impl MyApp {
             MainMessage::WindowClose(id) | MainMessage::WindowMinimize(id) => {
                 iced::window::minimize(id, true)
             },
-            MainMessage::ActivityData(date, activity) => {
-                self.activity_bar.push_data(date, activity);
+            MainMessage::ActivityData(_, _) => {
                 Task::none()
             },
             MainMessage::Payload(payload) => {
+                let click_activity: Vec<SensorSample> = payload.activity.click_series.points.iter().map(|m| (m.date, m.count)).collect();
+                let input_activity: Vec<SensorSample> = payload.activity.input_series.points.iter().map(|m| (m.date, m.count)).collect();
+                self.activity_graphs.click_activity.set(click_activity.clone());
+                self.activity_graphs.input_activity.set(input_activity.clone());
+                self.activity_bar.set(
+                    [click_activity, input_activity].concat()
+                );
                 dbg!(payload);
                 Task::none()
             }
