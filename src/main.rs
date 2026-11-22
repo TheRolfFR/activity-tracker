@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 
+use activity_tracker_lib::data::state::ActivityState;
 use iced::widget::svg::{Handle, Svg};
 use iced::widget::{center, column, container, mouse_area, operation, row, space, stack};
 #[cfg(target_os = "windows")]
@@ -26,7 +27,6 @@ mod assets;
 
 use crate::assets::{fonts::*, images::*};
 
-use crate::component::sensor_graph::SensorSample;
 use crate::islands::activity_bar::ActivityBar;
 use crate::state::MainMessage;
 
@@ -47,6 +47,10 @@ macro_rules! handle {
 
 // Type alias to save specifying the theme every time
 pub type Element<'a, Message> = iced::Element<'a, Message, iced_fluent_theme::Theme>;
+
+pub fn version() -> String {
+    format!("{}-{}-{}", env!("GIT_VERSION"), env!("GIT_HASH"), env!("GIT_DATE"))
+}
 
 fn main() -> iced::Result {
     let settings = iced::Settings {
@@ -209,15 +213,29 @@ impl MyApp {
             MainMessage::ActivityData(_, _) => {
                 Task::none()
             },
-            MainMessage::Payload(payload) => {
-                let click_activity: Vec<SensorSample> = payload.activity.clicks.points.iter().map(|m| (m.date, m.count)).collect();
-                let input_activity: Vec<SensorSample> = payload.activity.input_series.points.iter().map(|m| (m.date, m.count)).collect();
-                self.activity_graphs.click_activity.set(click_activity.clone());
-                self.activity_graphs.input_activity.set(input_activity.clone());
+            MainMessage::Payload(day_state) => {
+                let (click_samples, input_samples) = match day_state.today() {
+                    Some(today_state) => {
+                        let today = ActivityState::date();
+
+                        let click_activity = today_state.activity.clicks.iter().map(|m| {
+                            (today.with_time(m.time).unwrap(), m.count)
+                        }).collect();
+                        let input_activity = today_state.activity.inputs.iter().map(|m| {
+                            (today.with_time(m.time).unwrap(), m.count)
+                        }).collect();
+
+                        (click_activity, input_activity)
+                    },
+                    None => (vec![], vec![])
+                };
+
+                self.activity_graphs.click_activity.set(click_samples.clone());
+                self.activity_graphs.input_activity.set(input_samples.clone());
                 self.activity_bar.set(
-                    [click_activity, input_activity].concat()
+                    [click_samples, input_samples].concat()
                 );
-                dbg!(payload);
+                dbg!(day_state);
                 Task::none()
             }
         }

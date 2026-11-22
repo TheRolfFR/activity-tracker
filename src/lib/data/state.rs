@@ -4,11 +4,11 @@ use crate::data::{activity::{Activity, AdjustedType}, measure::MeasureDate, reco
 
 #[derive(Debug, Default, Clone)]
 pub struct DayState {
-    pub(crate) activity: Activity,
-    pub(crate) stats: DayStats,
+    pub activity: Activity,
+    pub stats: DayStats,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct ActivityState {
     week_days: [Option<DayState>; 7],
     week_stats: DurationStats,
@@ -26,7 +26,7 @@ impl Default for ActivityState {
 }
 
 impl ActivityState {
-    pub(crate) fn date() -> MeasureDate {
+    pub fn date() -> MeasureDate {
         Local::now().to_utc()
     }
     pub(crate) fn time() -> NaiveTime {
@@ -90,8 +90,8 @@ impl ActivityState {
         })
     }
 
-    pub(crate) fn today(&self) -> &Option<DayState> {
+    pub fn today(&self) -> Option<&DayState> {
         let today_dow = Self::today_index();
-        &self.week_days[today_dow as usize]
+        self.week_days[today_dow as usize].as_ref()
     }
 }

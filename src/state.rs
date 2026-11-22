@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use iced::window;
 
-use activity_tracker_lib::data::payload::Payload;
+use activity_tracker_lib::data::state::ActivityState;
 
 #[derive(Debug, Clone)]
 pub enum MainMessage {
@@ -29,5 +29,5 @@ pub enum MainMessage {
     FontLoaded(Result<(), iced::font::Error>),
 
     // Main data
-    Payload(Payload)
+    Payload(ActivityState)
 }

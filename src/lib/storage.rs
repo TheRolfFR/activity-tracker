@@ -2,13 +2,13 @@ use std::{fs::File, path::PathBuf, io::Read};
 
 use chrono::Utc;
 
-use crate::data::{records::DayRecord, week_data::WeekData};
+use crate::data::{records::DayRecord, state::ActivityState};
 
 pub struct DayRecordFile;
 
 impl DayRecordFile {
     fn today_index() -> u32 {
-        WeekData::today_index()
+        ActivityState::today_index()
     }
     fn path_activity_day(day_index: u32) -> PathBuf {
         std::env::temp_dir().join(format!("activity-tracker-{day_index}.json"))
