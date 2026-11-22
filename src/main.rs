@@ -210,7 +210,7 @@ impl MyApp {
                 Task::none()
             },
             MainMessage::Payload(payload) => {
-                let click_activity: Vec<SensorSample> = payload.activity.click_series.points.iter().map(|m| (m.date, m.count)).collect();
+                let click_activity: Vec<SensorSample> = payload.activity.clicks.points.iter().map(|m| (m.date, m.count)).collect();
                 let input_activity: Vec<SensorSample> = payload.activity.input_series.points.iter().map(|m| (m.date, m.count)).collect();
                 self.activity_graphs.click_activity.set(click_activity.clone());
                 self.activity_graphs.input_activity.set(input_activity.clone());

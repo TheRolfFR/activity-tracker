@@ -1,49 +1,44 @@
 use std::collections::HashMap;
+use std::ops::{AddAssign, SubAssign};
 use chrono::{NaiveTime, TimeDelta};
 use serde::{self, Deserialize, Serialize};
-use chrono::{serde::ts_seconds};
 
 use crate::data::FIVE_MINUTES;
-use crate::data::measure::{MeasureCount, MeasureDate};
+use crate::data::measure::MeasureCount;
 use crate::data::records::DayRecord;
-
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct WeekStats {
-    pub done: u64
-}
-
-impl<'a> From<&[Option<DayRecord>; 7]> for WeekStats {
-    fn from(values: &[Option<DayRecord>; 7]) -> Self {
-        let stats = values.into_iter().fold(WeekStats {
-            done: 0
-        }, |mut acc,cur_opt| {
-            if let Some(cur) = cur_opt {
-                let stats = DayStats::from(cur);
-                let secs = stats.duration.num_seconds() as u64;
-                acc.done += secs;
-            }
-            acc
-        });
-
-        stats
-    }
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize, Copy)]
 pub struct DayActivityStat {
-    #[serde(with = "ts_seconds")]
-    pub from: MeasureDate,
-    #[serde(with = "ts_seconds")]
-    pub to: MeasureDate,
+    pub from: NaiveTime,
+    pub to: NaiveTime,
     pub count: MeasureCount
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct DurationStats {
+    pub duration: TimeDelta,
+    pub active_duration: TimeDelta
+}
+
+impl AddAssign for DurationStats {
+    fn add_assign(&mut self, other: Self) {
+        self.duration = self.duration + other.duration;
+        self.active_duration = self.active_duration + other.active_duration;
+    }
+}
+
+impl SubAssign for DurationStats {
+    fn sub_assign(&mut self, other: Self) {
+        self.duration = self.duration - other.duration;
+        self.active_duration = self.active_duration - other.active_duration;
+    }
 }
 
 #[derive(Debug, Clone)]
 pub struct DayStats {
     pub activities: Vec<DayActivityStat>,
     pub last_activity: Option<DayActivityStat>,
-    pub duration: TimeDelta,
-    pub active_duration: TimeDelta
+    pub duration_stats: DurationStats
 }
 
 impl Default for DayStats {
@@ -51,23 +46,24 @@ impl Default for DayStats {
         Self {
             activities: vec![],
             last_activity: None,
-            duration: TimeDelta::zero(),
-            active_duration: TimeDelta::zero()
+            duration_stats: Default::default()
         }
     }
 }
 
 impl DayStats {
-    fn add(&mut self, (date, count): (MeasureDate, MeasureCount)) {
+    pub(crate) fn update(&mut self, time: NaiveTime, count: MeasureCount) -> (DurationStats, DurationStats) {
+        let before = self.duration_stats.clone();
+
         match self.last_activity.as_mut() {
-            Some(last_act) if (date - last_act.to) >= FIVE_MINUTES => {
+            Some(last_act) if (time - last_act.to) >= FIVE_MINUTES => {
                 self.activities.push(*last_act);
-                self.active_duration += last_act.to - last_act.from;
+                self.duration_stats.active_duration += last_act.to - last_act.from;
 
                 // Replace last activity
                 *last_act = DayActivityStat {
-                    from: date,
-                    to: date,
+                    from: time,
+                    to: time,
                     count
                 };
             },
@@ -75,24 +71,26 @@ impl DayStats {
                 // No active_duration change
                 // Create last activity
                 self.last_activity = Some(DayActivityStat {
-                    from: date,
-                    to: date,
+                    from: time,
+                    to: time,
                     count
                 });
             }
             Some(last_act) => {
                 // retrieve previous last activity duration
-                self.active_duration -= last_act.to - last_act.from;
+                self.duration_stats.active_duration -= last_act.to - last_act.from;
 
-                last_act.to = date;
+                last_act.to = time;
                 last_act.count += count;
 
                 // Add last activity duration
-                self.active_duration += last_act.to - last_act.from;
+                self.duration_stats.active_duration += last_act.to - last_act.from;
             }
         }
 
-        self.update_duration();
+        self.duration_stats.active_duration = self.update_duration();
+
+        (before, self.duration_stats.clone())
     }
 
     fn update_duration(&self) -> TimeDelta {
@@ -102,15 +100,15 @@ impl DayStats {
 
         // Find closest activity before 12h30
         let midday = NaiveTime::from_hms_opt(12, 30, 0).unwrap();
-        let first_morning_act = self.activities.iter().find(|act| act.to.time() <= midday);
-        let last_morning_act = self.activities.iter().rev().find(|act| act.to.time() <= midday);
+        let first_morning_act = self.activities.iter().find(|act| act.to <= midday);
+        let last_morning_act = self.activities.iter().rev().find(|act| act.to <= midday);
         let morning_duration = match (first_morning_act, last_morning_act) {
             (Some(first), Some(last)) => last.to - first.from,
             _ => TimeDelta::zero()
         };
 
-        let first_afternoon_act = self.activities.iter().find(|act| act.from.time() > midday);
-        let last_afternoon_act = self.activities.iter().rev().find(|act| act.from.time() > midday);
+        let first_afternoon_act = self.activities.iter().find(|act| act.from > midday);
+        let last_afternoon_act = self.activities.iter().rev().find(|act| act.from > midday);
         let afternoon_duration = match (first_afternoon_act, last_afternoon_act) {
             (Some(first), Some(last)) => last.to - first.from,
             _ => TimeDelta::zero()
@@ -126,19 +124,19 @@ impl From<&DayRecord> for DayStats {
         let inputs = &day_record.inputs;
 
         // get all timestamps
-        let mut measures: HashMap<MeasureDate, MeasureCount> = HashMap::new();
+        let mut measures: HashMap<NaiveTime, MeasureCount> = HashMap::new();
 
         //* count clicks
         for measure in clicks.iter().chain(inputs.iter()) {
-            *measures.entry(measure.date).or_insert(0) += measure.count;
+            *measures.entry(measure.time).or_insert(0) += measure.count;
         }
 
-        let mut measures_dates: Vec::<(MeasureDate, MeasureCount)> = measures.into_iter().collect();
+        let mut measures_dates: Vec::<_> = measures.into_iter().collect();
         measures_dates.sort_by_key(|m| m.0);
 
         let mut day_stat = DayStats::default();
         for md in measures_dates {
-            day_stat.add(md);
+            day_stat.update(md.0, md.1);
         }
 
         day_stat

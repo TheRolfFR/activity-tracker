@@ -1,42 +1,19 @@
+use chrono::NaiveTime;
 use serde::{Deserialize, Serialize};
-use chrono::{DateTime, Utc};
 
-use crate::data::{measure::*, records::DayRecord};
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ActivityLabels {
-    pub x: String,
-    pub y: String,
-}
-
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ActivitySeries<T>
-where
-    T: Serialize,
-{
-    pub points: Vec<T>,
-    pub labels: ActivityLabels
-}
+use crate::data::{measure::{Measure, MeasureCount}, records::{DayRecord, Record}};
 
 pub type AdjustedType = i32;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Activity {
     pub clicks_per_minute: f64,
-    pub click_series: ActivitySeries<ClickMeasure>,
+    pub clicks: Vec<Measure>,
 
     pub inputs_per_minute: f64,
-    pub input_series: ActivitySeries<InputMeasure>,
+    pub inputs: Vec<Measure>,
 
-    pub adjusted: i32
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ActivityPeriod {
-    pub start: DateTime<Utc>,
-    pub end: Option<DateTime<Utc>>,
-    pub level: Activity
+    pub adjusted: AdjustedType
 }
 
 impl From<& DayRecord> for Activity {
@@ -45,7 +22,7 @@ impl From<& DayRecord> for Activity {
         let mut inputs = day_record.inputs.clone();
 
         clicks.sort_by(
-            |a,b| b.date.cmp(&a.date)
+            |a,b| b.time.cmp(&a.time)
         );
         let five_clicks = day_record.clicks.clone();
         let fold_clicks = five_clicks.iter().fold(
@@ -54,7 +31,7 @@ impl From<& DayRecord> for Activity {
         );
 
         inputs.sort_by(
-            |a,b| b.date.cmp(&a.date)
+            |a,b| b.time.cmp(&a.time)
         );
         let five_inputs = day_record.inputs.clone();
         let fold_inputs = five_inputs.iter().fold(
@@ -64,22 +41,32 @@ impl From<& DayRecord> for Activity {
 
         Activity {
             clicks_per_minute: f64::from(fold_clicks.0) / f64::from(fold_clicks.1.max(1)),
-            click_series: ActivitySeries {
-                points: five_clicks,
-                labels: ActivityLabels {
-                    x: "clicks".to_string(),
-                    y: "count".to_string()
-                }
-            },
+            clicks,
+
             inputs_per_minute: f64::from(fold_inputs.0) / f64::from(fold_inputs.1.max(1)),
-            input_series: ActivitySeries {
-                points: five_inputs,
-                labels: ActivityLabels {
-                    x: "inputs".to_string(),
-                    y: "count".to_string()
-                }
-            },
+            inputs,
+
             adjusted: day_record.adjusted
         }
+    }
+}
+
+impl Activity {
+    fn update_measure(list: &mut Vec<Measure>, time: NaiveTime, count: MeasureCount) {
+        let opt_item = list.iter_mut().find(|m| m.time == time);
+
+        match opt_item {
+            Some(item) => {
+                item.count = count;
+            },
+            None => {
+                list.push(Measure { count, time });
+            }
+        };
+    }
+
+    pub fn update(&mut self, time: NaiveTime, record: Record) {
+        Self::update_measure(&mut self.clicks, time, record.clicks);
+        Self::update_measure(&mut self.inputs, time, record.inputs);
     }
 }
